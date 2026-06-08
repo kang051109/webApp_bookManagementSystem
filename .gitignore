@@ -1,0 +1,21 @@
+# Maven
+target/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.idea/workspace.xml
+.idea/shelf/
+.idea/tasks.xml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp
+*.tmp

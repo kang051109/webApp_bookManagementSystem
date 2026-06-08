@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Start All" type="CompoundRunConfigurationType" factoryName="Compound">
+    <toRun name="Tomcat 11.0.181" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" />
+    <toRun name="Frontend Dev" type="js.build_tools.npm" />
+    <method v="2" />
+  </configuration>
+</component>
