@@ -1,26 +1,27 @@
 package com.example.webapp_project.service;
 
 import com.example.webapp_project.repository.BookRepository;
+import org.springframework.stereotype.Service;;
 import com.example.webapp_project.repository.BorrowRecordRepository;
+import org.springframework.stereotype.Service;;
 import com.example.webapp_project.repository.CategoryRepository;
+import org.springframework.stereotype.Service;;
 import com.example.webapp_project.repository.UserRepository;
+import org.springframework.stereotype.Service;;
 import java.util.HashMap;
 import java.util.Map;
-
 /**
  * 仪表板统计服务（单例）
  */
+@Service
 public class DashboardService {
-
     private static final DashboardService INSTANCE = new DashboardService();
     private DashboardService() {}
     public static DashboardService getInstance() { return INSTANCE; }
-
     private final BookRepository bookRepo = BookRepository.getInstance();
     private final UserRepository userRepo = UserRepository.getInstance();
     private final CategoryRepository catRepo = CategoryRepository.getInstance();
     private final BorrowRecordRepository borrowRepo = BorrowRecordRepository.getInstance();
-
     public Map<String, Object> getStats() {
         Map<String, Object> s = new HashMap<>();
         s.put("totalBooks", bookRepo.count());
