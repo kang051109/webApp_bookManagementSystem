@@ -7,20 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    private final DashboardService dashboardService;
-    private final AuthService authService;
-
-    public DashboardController(DashboardService dashboardService, AuthService authService) {
-        this.dashboardService = dashboardService;
-        this.authService = authService;
-    }
+    private final DashboardService dashboardService = DashboardService.getInstance();
+    private final AuthService authService = AuthService.getInstance();
 
     @GetMapping("/stats")
     public JsonResponse<Map<String, Object>> getStats(HttpServletRequest req) {

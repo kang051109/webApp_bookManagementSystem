@@ -6,7 +6,6 @@ import com.example.webapp_project.service.AuthService;
 import com.example.webapp_project.service.CategoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +14,8 @@ import java.util.Map;
 @RequestMapping("/api/categories")
 public class CategoryController {
 
-    private final CategoryService categoryService;
-    private final AuthService authService;
-
-    public CategoryController(CategoryService categoryService, AuthService authService) {
-        this.categoryService = categoryService;
-        this.authService = authService;
-    }
+    private final CategoryService categoryService = CategoryService.getInstance();
+    private final AuthService authService = AuthService.getInstance();
 
     @GetMapping
     public JsonResponse<Map<String, Object>> list() {
@@ -38,8 +32,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public JsonResponse<Map<String, Object>> create(@RequestBody Map<String, String> request,
-                                                     HttpServletRequest req) {
+    public JsonResponse<Map<String, Object>> create(@RequestBody Map<String, String> request, HttpServletRequest req) {
         if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
         Category category = categoryService.create(request.get("name"), request.get("description"));
         Map<String, Object> data = new HashMap<>(); data.put("category", category);
@@ -48,8 +41,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public JsonResponse<Map<String, Object>> update(@PathVariable Long id,
-                                                     @RequestBody Map<String, String> request,
-                                                     HttpServletRequest req) {
+                                                     @RequestBody Map<String, String> request, HttpServletRequest req) {
         if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
         Category category = categoryService.update(id, request.get("name"), request.get("description"));
         Map<String, Object> data = new HashMap<>(); data.put("category", category);

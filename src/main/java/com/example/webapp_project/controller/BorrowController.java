@@ -6,7 +6,6 @@ import com.example.webapp_project.service.AuthService;
 import com.example.webapp_project.service.BorrowService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,17 +14,11 @@ import java.util.Map;
 @RequestMapping("/api/borrow")
 public class BorrowController {
 
-    private final BorrowService borrowService;
-    private final AuthService authService;
-
-    public BorrowController(BorrowService borrowService, AuthService authService) {
-        this.borrowService = borrowService;
-        this.authService = authService;
-    }
+    private final BorrowService borrowService = BorrowService.getInstance();
+    private final AuthService authService = AuthService.getInstance();
 
     @PostMapping
-    public JsonResponse<Map<String, Object>> borrow(@RequestBody Map<String, Object> request,
-                                                     HttpServletRequest req) {
+    public JsonResponse<Map<String, Object>> borrow(@RequestBody Map<String, Object> request, HttpServletRequest req) {
         Long userId = authService.getCurrentUserId(req);
         if (userId == null) return JsonResponse.unauthorized("请先登录");
         Object bookIdObj = request.get("bookId");
@@ -35,8 +28,7 @@ public class BorrowController {
     }
 
     @PostMapping("/{id}/return")
-    public JsonResponse<Map<String, Object>> returnBook(@PathVariable("id") Long recordId,
-                                                         HttpServletRequest req) {
+    public JsonResponse<Map<String, Object>> returnBook(@PathVariable("id") Long recordId, HttpServletRequest req) {
         Long userId = authService.getCurrentUserId(req);
         if (userId == null) return JsonResponse.unauthorized("请先登录");
         return JsonResponse.success("归还成功",

@@ -6,7 +6,6 @@ import com.example.webapp_project.service.AuthService;
 import com.example.webapp_project.service.BookService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,13 +13,8 @@ import java.util.Map;
 @RequestMapping("/api/books")
 public class BookController {
 
-    private final BookService bookService;
-    private final AuthService authService;
-
-    public BookController(BookService bookService, AuthService authService) {
-        this.bookService = bookService;
-        this.authService = authService;
-    }
+    private final BookService bookService = BookService.getInstance();
+    private final AuthService authService = AuthService.getInstance();
 
     @GetMapping
     public JsonResponse<Map<String, Object>> list(@RequestParam(defaultValue = "1") int page,
@@ -45,8 +39,7 @@ public class BookController {
 
     @PutMapping("/{id}")
     public JsonResponse<Map<String, Object>> update(@PathVariable Long id,
-                                                     @RequestBody Book book,
-                                                     HttpServletRequest req) {
+                                                     @RequestBody Book book, HttpServletRequest req) {
         if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
         Map<String, Object> data = new HashMap<>(); data.put("book", bookService.update(id, book));
         return JsonResponse.success("更新图书成功", data);
