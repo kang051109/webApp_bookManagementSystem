@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * 借阅记录数据访问层 - JDBC 实现（单例）
+ * 所有写操作支持传入外部 Connection 实现事务控制
  */
 public class BorrowRecordRepository {
 
@@ -16,30 +17,50 @@ public class BorrowRecordRepository {
     private BorrowRecordRepository() {}
     public static BorrowRecordRepository getInstance() { return INSTANCE; }
 
-    public BorrowRecord save(Long userId, Long bookId, LocalDateTime dueDate) {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "INSERT INTO borrow_records (user_id, book_id, due_date, status) VALUES (?,?,?,'borrowed')",
-                 Statement.RETURN_GENERATED_KEYS)) {
+    /** 使用事务连接保存 */
+    public BorrowRecord save(Connection conn, Long userId, Long bookId, LocalDateTime dueDate) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO borrow_records (user_id, book_id, due_date, status) VALUES (?,?,?,'borrowed')",
+                Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, userId); ps.setLong(2, bookId);
             ps.setTimestamp(3, Timestamp.valueOf(dueDate));
             ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) return findById(keys.getLong(1)); }
-        } catch (SQLException e) { throw new RuntimeException("创建借阅记录失败", e); }
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) return findById(conn, keys.getLong(1));
+            }
+        }
         return null;
     }
 
-    public BorrowRecord findById(Long id) {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "SELECT r.*, u.username, u.full_name AS user_full_name, b.title AS book_title, b.isbn AS book_isbn " +
-                 "FROM borrow_records r LEFT JOIN users u ON r.user_id=u.id LEFT JOIN books b ON r.book_id=b.id WHERE r.id=?")) {
+    /** 使用事务连接更新归还状态 */
+    public void returnBook(Connection conn, Long recordId, LocalDateTime returnDate, String status) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "UPDATE borrow_records SET return_date=?, status=? WHERE id=? AND status='borrowed'")) {
+            ps.setTimestamp(1, Timestamp.valueOf(returnDate)); ps.setString(2, status); ps.setLong(3, recordId);
+            int affected = ps.executeUpdate();
+            if (affected == 0) throw new SQLException("归还失败：借阅记录状态已变更");
+        }
+    }
+
+    /** 使用事务连接查询（用于同一事务中读取最新数据） */
+    public BorrowRecord findById(Connection conn, Long id) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT r.*, u.username, u.full_name AS user_full_name, b.title AS book_title, b.isbn AS book_isbn " +
+                "FROM borrow_records r LEFT JOIN users u ON r.user_id=u.id LEFT JOIN books b ON r.book_id=b.id WHERE r.id=?")) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return map(rs); }
-        } catch (SQLException e) { throw new RuntimeException("查询借阅记录失败", e); }
+        }
         return null;
     }
 
+    /** 独立连接：根据 ID 查询 */
+    public BorrowRecord findById(Long id) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            return findById(conn, id);
+        } catch (SQLException e) { throw new RuntimeException("查询借阅记录失败", e); }
+    }
+
+    /** 独立连接：查询用户的借阅记录 */
     public List<BorrowRecord> findByUserId(Long userId) {
         List<BorrowRecord> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
@@ -53,6 +74,7 @@ public class BorrowRecordRepository {
         return list;
     }
 
+    /** 独立连接：查询全部记录 */
     public List<BorrowRecord> findAll() {
         List<BorrowRecord> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
@@ -66,6 +88,20 @@ public class BorrowRecordRepository {
         return list;
     }
 
+    /** 事务连接：查询用户活跃借阅（用于事务内二次检查） */
+    public List<BorrowRecord> findActiveByUserId(Connection conn, Long userId) throws SQLException {
+        List<BorrowRecord> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT r.*, u.username, u.full_name AS user_full_name, b.title AS book_title, b.isbn AS book_isbn " +
+                "FROM borrow_records r LEFT JOIN users u ON r.user_id=u.id LEFT JOIN books b ON r.book_id=b.id " +
+                "WHERE r.user_id=? AND r.status='borrowed' ORDER BY r.created_at DESC")) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) { while (rs.next()) list.add(map(rs)); }
+        }
+        return list;
+    }
+
+    /** 独立连接：查询用户活跃借阅 */
     public List<BorrowRecord> findActiveByUserId(Long userId) {
         List<BorrowRecord> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
@@ -79,14 +115,7 @@ public class BorrowRecordRepository {
         return list;
     }
 
-    public void returnBook(Long recordId, LocalDateTime returnDate, String status) {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("UPDATE borrow_records SET return_date=?, status=? WHERE id=?")) {
-            ps.setTimestamp(1, Timestamp.valueOf(returnDate)); ps.setString(2, status); ps.setLong(3, recordId);
-            ps.executeUpdate();
-        } catch (SQLException e) { throw new RuntimeException("归还图书失败", e); }
-    }
-
+    /** 独立连接：统计借阅中数量 */
     public long countActive() {
         try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -96,6 +125,7 @@ public class BorrowRecordRepository {
         return 0;
     }
 
+    /** 独立连接：统计逾期数量 */
     public long countOverdue() {
         try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();

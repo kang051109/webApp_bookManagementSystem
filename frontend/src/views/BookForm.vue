@@ -20,6 +20,12 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label>出版年份</label><input v-model="form.publishYear" type="number" placeholder="2024" min="1000" max="2099" :disabled="loading" /></div>
+        </div>
+        <div class="form-row" v-if="isEdit">
+          <div class="form-group"><label>总库存</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="库存量" required :disabled="loading" /></div>
+          <div class="form-group"><label>可借数量</label><input v-model.number="form.availableCopies" type="number" min="0" placeholder="可借数量" :disabled="loading" /><small style="color:var(--warm-gray);font-size:0.6875rem;">已借出 {{ borrowedHint }} 本</small></div>
+        </div>
+        <div class="form-row" v-else>
           <div class="form-group"><label>总库存</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="库存量" required :disabled="loading" /></div>
         </div>
         <div class="form-group"><label>描述</label><textarea v-model="form.description" rows="4" placeholder="图书简介" :disabled="loading"></textarea></div>
@@ -42,17 +48,18 @@ export default {
   data() {
     return {
       isEdit: false, categories: [],
-      form: { isbn: '', title: '', author: '', publisher: '', publishYear: '', categoryId: '', totalCopies: 1, description: '' },
+      form: { isbn: '', title: '', author: '', publisher: '', publishYear: '', categoryId: '', totalCopies: 1, availableCopies: null, description: '' },
+      borrowedHint: 0,
       loading: false, error: '', success: ''
     }
   },
   async mounted() { this.isEdit = !!this.$route.params.id; await this.loadCategories(); if (this.isEdit) await this.loadBook() },
   methods: {
     async loadCategories() { try { const res = await api.get('/categories'); if (res.code === 200 && res.data) this.categories = res.data.categories || [] } catch {} },
-    async loadBook() { try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data?.book) { const b = res.data.book; this.form = { isbn: b.isbn || '', title: b.title || '', author: b.author || '', publisher: b.publisher || '', publishYear: b.publishYear || '', categoryId: b.categoryId || '', totalCopies: b.totalCopies || 1, description: b.description || '' } } } catch { this.error = '加载失败' } },
+    async loadBook() { try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data?.book) { const b = res.data.book; const av = b.availableCopies != null ? b.availableCopies : b.totalCopies; const tot = b.totalCopies || 1; this.form = { isbn: b.isbn || '', title: b.title || '', author: b.author || '', publisher: b.publisher || '', publishYear: b.publishYear || '', categoryId: b.categoryId || '', totalCopies: tot, availableCopies: av, description: b.description || '' }; this.borrowedHint = tot - av; } } catch { this.error = '加载失败' } },
     async handleSubmit() {
       this.error = ''; this.success = ''; this.loading = true
-      const payload = { isbn: this.form.isbn, title: this.form.title, author: this.form.author, publisher: this.form.publisher || null, publishYear: this.form.publishYear ? parseInt(this.form.publishYear) : null, categoryId: this.form.categoryId ? parseInt(this.form.categoryId) : null, totalCopies: parseInt(this.form.totalCopies) || 1, description: this.form.description || null }
+      const payload = { isbn: this.form.isbn, title: this.form.title, author: this.form.author, publisher: this.form.publisher || null, publishYear: this.form.publishYear ? parseInt(this.form.publishYear) : null, categoryId: this.form.categoryId ? parseInt(this.form.categoryId) : null, totalCopies: parseInt(this.form.totalCopies) || 1, availableCopies: this.isEdit && this.form.availableCopies != null ? parseInt(this.form.availableCopies) : null, description: this.form.description || null }
       try { const res = this.isEdit ? await api.put(`/books/${this.$route.params.id}`, payload) : await api.post('/books', payload); if (res.code === 200) { showToast(this.isEdit ? '图书已更新' : '图书已创建'); setTimeout(() => { this.$router.push('/books') }, 500) } else { this.error = res.message || '操作失败' } }
       catch (err) { this.error = err.message || '操作失败' } finally { this.loading = false }
     }

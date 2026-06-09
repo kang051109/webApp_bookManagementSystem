@@ -50,12 +50,28 @@ public class BookService {
         if (existing == null) throw new IllegalArgumentException("图书不存在");
         Book dup = repo.findByIsbn(book.getIsbn());
         if (dup != null && !dup.getId().equals(id)) throw new IllegalArgumentException("ISBN 已被其他图书使用");
-        if (book.getTotalCopies() == null || book.getTotalCopies() < 1) book.setTotalCopies(existing.getTotalCopies());
-        if (book.getAvailableCopies() == null || book.getAvailableCopies() > book.getTotalCopies())
-            book.setAvailableCopies(book.getTotalCopies());
+
         int borrowed = existing.getTotalCopies() - existing.getAvailableCopies();
-        if (book.getAvailableCopies() < borrowed)
-            throw new IllegalArgumentException("可借数量不能低于已借出数量(" + borrowed + ")");
+
+        // 必须先检查总库存不能小于已借出数量
+        int newTotal = (book.getTotalCopies() != null && book.getTotalCopies() >= 1)
+                ? book.getTotalCopies() : existing.getTotalCopies();
+        if (newTotal < borrowed)
+            throw new IllegalArgumentException("总库存不能低于已借出数量(" + borrowed + ")");
+        book.setTotalCopies(newTotal);
+
+        // 可借数量 = max(用户指定的值, borrowed)，且不能超过 totalCopies
+        if (book.getAvailableCopies() == null) {
+            // 未指定时：保持原比例，但至少要有borrowed本
+            int implied = existing.getAvailableCopies() + (newTotal - existing.getTotalCopies());
+            book.setAvailableCopies(Math.max(borrowed, Math.min(newTotal, implied)));
+        } else {
+            if (book.getAvailableCopies() < borrowed)
+                throw new IllegalArgumentException("可借数量不能低于已借出数量(" + borrowed + ")");
+            if (book.getAvailableCopies() > newTotal)
+                book.setAvailableCopies(newTotal);
+        }
+
         book.setId(id);
         return repo.update(book);
     }

@@ -70,20 +70,22 @@ public class CategoryRepository {
     }
 
     public boolean delete(Long id) {
-        String check = "SELECT COUNT(*) FROM books WHERE category_id=?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(check)) {
-            ps.setLong(1, id);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next() && rs.getLong(1) > 0)
-                throw new RuntimeException("该分类下有图书，无法删除"); }
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            // 同一连接内完成检查+删除，消除TOCTOU
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM books WHERE category_id=?")) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getLong(1) > 0)
+                        throw new IllegalStateException("该分类下有图书，无法删除");
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM categories WHERE id=?")) {
+                ps.setLong(1, id); return ps.executeUpdate() > 0;
+            }
         } catch (SQLException e) {
-            if (e.getMessage().contains("无法删除")) throw new RuntimeException(e.getMessage());
-            throw new RuntimeException("检查分类关联失败", e);
+            throw new RuntimeException("删除分类失败", e);
         }
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM categories WHERE id=?")) {
-            ps.setLong(1, id); return ps.executeUpdate() > 0;
-        } catch (SQLException e) { throw new RuntimeException("删除分类失败", e); }
     }
 
     public long count() {

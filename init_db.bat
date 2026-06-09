@@ -15,7 +15,7 @@ echo Using MySQL at: %MYSQL_CMD%
 echo Password: mysql123
 echo.
 
-%MYSQL_CMD% -u root -p < %SCHEMA_FILE%
+%MYSQL_CMD% -u root -pmysql123 < %SCHEMA_FILE%
 
 if %ERRORLEVEL% EQU 0 (
     echo.

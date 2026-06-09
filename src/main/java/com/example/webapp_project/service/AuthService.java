@@ -36,15 +36,16 @@ public class AuthService {
         String hash = PasswordUtil.hash("admin123");
         System.out.println("[Auth] 哈希: " + hash);
 
+        // 仅在 admin 不存在时创建，不覆盖已有密码
         String sql = "INSERT INTO users (username,password_hash,email,full_name,role) " +
                      "VALUES ('admin',?,'admin@book.com','系统管理员','admin') " +
-                     "ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash)";
+                     "ON DUPLICATE KEY UPDATE username=username";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, hash);
-            ps.executeUpdate();
-            System.out.println("[Auth] 管理员密码已确保正确 (admin/admin123)");
+            int rows = ps.executeUpdate();
+            if (rows > 0) System.out.println("[Auth] 管理员账号已就绪");
         } catch (Exception e) {
             System.err.println("[Auth] 初始化失败: " + e.getMessage());
             e.printStackTrace();

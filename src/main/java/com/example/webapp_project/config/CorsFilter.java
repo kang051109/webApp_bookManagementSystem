@@ -1,16 +1,28 @@
 package com.example.webapp_project.config;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 
 /**
- * CORS 跨域过滤器 - 允许前端跨域访问后端 API
+ * CORS 跨域过滤器 - 同时处理 preflight OPTIONS 和普通响应
  */
 @Provider
-public class CorsFilter implements ContainerResponseFilter {
+@PreMatching
+public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        // 直接响应 preflight OPTIONS 请求，不进入业务链路
+        if ("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
+            requestContext.abortWith(Response.ok().build());
+        }
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext,

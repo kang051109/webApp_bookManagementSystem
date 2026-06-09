@@ -3,7 +3,7 @@
     <div class="breadcrumb"><router-link to="/">首页</router-link><span>/</span><span>我的借阅</span></div>
     <div class="page-header">
       <h3>我的借阅</h3>
-      <button v-if="isAdmin" class="btn btn-outline btn-sm" @click="$router.push('/admin/borrows')">全部记录</button>
+      <button v-if="authStore.isAdmin" class="btn btn-outline btn-sm" @click="$router.push('/admin/borrows')">全部记录</button>
     </div>
 
     <div v-if="loading" class="skeleton-table">
@@ -54,11 +54,12 @@
 </template>
 
 <script>
+import { authStore } from '../services/authStore.js'
 import api from '../services/api.js'
 import { showToast } from '../services/toast.js'
 export default {
-  name: 'MyBorrows', inject: ['isAdmin'],
-  data() { return { records: [], loading: false, returnLoading: null, msg: '', msgType: '' } },
+  name: 'MyBorrows',
+  data() { return { authStore, records: [], loading: false, returnLoading: null, msg: '', msgType: '' } },
   async mounted() { await this.loadRecords() },
   methods: {
     async loadRecords() {

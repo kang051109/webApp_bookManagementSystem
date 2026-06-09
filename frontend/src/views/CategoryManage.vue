@@ -3,7 +3,7 @@
     <div class="breadcrumb"><router-link to="/">首页</router-link><span>/</span><span>分类管理</span></div>
     <div class="page-header">
       <h3>分类管理</h3>
-      <button v-if="isAdmin" class="btn btn-primary btn-sm" @click="openAddModal">+ 新增</button>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm" @click="openAddModal">+ 新增</button>
     </div>
 
     <div v-if="loading" class="skeleton-table">
@@ -17,12 +17,12 @@
     <div v-else-if="categories.length > 0" class="table-scroll">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>分类名称</th><th>描述</th><th v-if="isAdmin">操作</th></tr></thead>
+          <thead><tr><th>分类名称</th><th>描述</th><th v-if="authStore.isAdmin">操作</th></tr></thead>
           <tbody>
             <tr v-for="cat in categories" :key="cat.id">
               <td style="font-weight:600;">{{ cat.name }}</td>
               <td style="color:var(--warm-gray);font-size:0.8125rem;">{{ cat.description || '-' }}</td>
-              <td v-if="isAdmin">
+              <td v-if="authStore.isAdmin">
                 <button class="btn btn-sm btn-outline" @click="openEditModal(cat)">编辑</button>
                 <span class="btn-sep"></span>
                 <button class="btn btn-sm btn-danger" @click="confirmDelete(cat)">删除</button>
@@ -45,7 +45,7 @@
       </svg>
       <div class="empty-title">暂无分类</div>
       <div class="empty-desc">还没有创建任何图书分类</div>
-      <button v-if="isAdmin" class="btn btn-primary btn-sm empty-action" @click="openAddModal">新增分类</button>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm empty-action" @click="openAddModal">新增分类</button>
     </div>
 
     <!-- Add/Edit modal -->
@@ -77,11 +77,12 @@
 </template>
 
 <script>
+import { authStore } from '../services/authStore.js'
 import api from '../services/api.js'
 import { showToast } from '../services/toast.js'
 export default {
-  name: 'CategoryManage', inject: ['isAdmin'],
-  data() { return { categories: [], loading: false, showModal: false, isEditing: false, editingId: null, form: { name: '', description: '' }, formError: '', formLoading: false, showDeleteConfirm: false, deleteTarget: null } },
+  name: 'CategoryManage',
+  data() { return { authStore, categories: [], loading: false, showModal: false, isEditing: false, editingId: null, form: { name: '', description: '' }, formError: '', formLoading: false, showDeleteConfirm: false, deleteTarget: null } },
   async mounted() { await this.fetchCategories() },
   methods: {
     async fetchCategories() {

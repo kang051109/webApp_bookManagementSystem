@@ -3,7 +3,7 @@
     <div class="breadcrumb"><router-link to="/">首页</router-link><span>/</span><span>图书管理</span></div>
     <div class="page-header">
       <h3>图书管理</h3>
-      <button v-if="isAdmin" class="btn btn-primary btn-sm" @click="$router.push('/books/new')">+ 新增</button>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm" @click="$router.push('/books/new')">+ 新增</button>
     </div>
 
     <div class="filter-bar">
@@ -35,7 +35,7 @@
           <thead>
             <tr>
               <th>书名</th><th>作者</th><th>ISBN</th><th>分类</th><th style="text-align:center;">库存</th><th style="text-align:center;">可借</th>
-              <th v-if="isAdmin">操作</th>
+              <th v-if="authStore.isAdmin">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -46,7 +46,7 @@
               <td>{{ book.categoryName || '-' }}</td>
               <td style="text-align:center;">{{ book.totalCopies }}</td>
               <td style="text-align:center;"><span :class="book.availableCopies > 0 ? 'avail' : 'unavail'">{{ book.availableCopies }}</span></td>
-              <td v-if="isAdmin">
+              <td v-if="authStore.isAdmin">
                 <button class="btn btn-sm btn-outline" @click="$router.push(`/books/${book.id}/edit`)">编辑</button>
                 <span class="btn-sep"></span>
                 <button class="btn btn-sm btn-danger" @click="confirmDelete(book)">删除</button>
@@ -69,7 +69,7 @@
       </svg>
       <div class="empty-title">暂无图书</div>
       <div class="empty-desc">库存中还没有任何图书</div>
-      <button v-if="isAdmin" class="btn btn-primary btn-sm empty-action" @click="$router.push('/books/new')">新增第一本</button>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm empty-action" @click="$router.push('/books/new')">新增第一本</button>
     </div>
 
     <div class="pagination" v-if="totalPages > 1">
@@ -98,12 +98,14 @@
 </template>
 
 <script>
+import { authStore } from '../services/authStore.js'
 import api from '../services/api.js'
 import { showToast } from '../services/toast.js'
 export default {
-  name: 'BookList', inject: ['isAdmin'],
+  name: 'BookList',
   data() {
     return {
+      authStore,
       books: [], categories: [], keyword: '', categoryId: '',
       page: 1, size: 10, total: 0, totalPages: 0, loading: false,
       showDeleteConfirm: false, deleteTarget: null, formError: '', deleteLoading: false

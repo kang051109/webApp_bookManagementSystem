@@ -4,8 +4,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 全局异常映射器 - 统一处理后端异常并返回标准 JSON 格式
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 @Provider
 public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionMapper.class);
+    private static final Logger logger = Logger.getLogger(GlobalExceptionMapper.class.getName());
 
     @Override
     public Response toResponse(Exception exception) {
@@ -28,6 +28,13 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                     .build();
         }
 
+        // 处理 IllegalStateException（业务规则冲突，如无法删除）
+        if (exception instanceof IllegalStateException) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(JsonResponse.error(409, exception.getMessage()))
+                    .build();
+        }
+
         // 处理 IllegalArgumentException（参数校验失败）
         if (exception instanceof IllegalArgumentException) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -36,7 +43,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
         }
 
         // 处理其他未捕获异常
-        logger.error("服务器内部错误", exception);
+        logger.log(Level.SEVERE, "服务器内部错误", exception);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(JsonResponse.serverError("服务器内部错误: " + exception.getMessage()))
                 .build();

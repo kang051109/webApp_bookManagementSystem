@@ -39,8 +39,8 @@
       <div class="quick-row">
         <button class="quick-btn" @click="$router.push('/books')">浏览图书</button>
         <button class="quick-btn" @click="$router.push('/my-borrows')">我的借阅</button>
-        <button v-if="isAdmin" class="quick-btn" @click="$router.push('/books/new')">新增图书</button>
-        <button v-if="isAdmin" class="quick-btn" @click="$router.push('/categories')">管理分类</button>
+        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/books/new')">新增图书</button>
+        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/categories')">管理分类</button>
       </div>
     </div>
   </div>
@@ -48,10 +48,10 @@
 
 <script>
 import api from '../services/api.js'
+import { authStore } from '../services/authStore.js'
 export default {
   name: 'Dashboard',
-  inject: ['isAdmin'],
-  data() { return { stats: { totalBooks: 0, totalUsers: 0, totalCategories: 0, activeBorrows: 0, overdueBorrows: 0 }, loading: false } },
+  data() { return { authStore, stats: { totalBooks: 0, totalUsers: 0, totalCategories: 0, activeBorrows: 0, overdueBorrows: 0 }, loading: false } },
   async mounted() { await this.loadStats() },
   methods: {
     async loadStats() {

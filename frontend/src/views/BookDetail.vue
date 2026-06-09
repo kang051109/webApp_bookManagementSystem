@@ -3,7 +3,7 @@
     <div class="breadcrumb"><router-link to="/books">图书管理</router-link><span>/</span><span>{{ book?.title || '加载中...' }}</span></div>
     <div class="detail-top">
       <button class="btn btn-outline btn-sm" @click="$router.push('/books')">&larr; 返回</button>
-      <div v-if="isAdmin && book">
+      <div v-if="authStore.isAdmin && book">
         <button class="btn btn-outline btn-sm" @click="$router.push(`/books/${book.id}/edit`)">编辑</button>
       </div>
     </div>
@@ -42,7 +42,7 @@
         <div class="side-card">
           <div class="side-stat"><span class="side-stat-num">{{ book.totalCopies }}</span><span class="side-stat-label">总库存</span></div>
           <div class="side-stat"><span class="side-stat-num" :class="book.availableCopies > 0 ? 'green' : 'red'">{{ book.availableCopies }}</span><span class="side-stat-label">可借</span></div>
-          <button v-if="currentUser" class="btn btn-primary btn-block" :disabled="book.availableCopies <= 0 || borrowLoading" @click="handleBorrow">
+          <button v-if="authStore.currentUser" class="btn btn-primary btn-block" :disabled="book.availableCopies <= 0 || borrowLoading" @click="handleBorrow">
             {{ borrowLoading ? '借阅中...' : (book.availableCopies > 0 ? '借阅此书' : '暂无余量') }}
           </button>
         </div>
@@ -54,9 +54,10 @@
 <script>
 import api from '../services/api.js'
 import { showToast } from '../services/toast.js'
+import { authStore } from '../services/authStore.js'
 export default {
-  name: 'BookDetail', inject: ['currentUser', 'isAdmin'],
-  data() { return { book: null, loading: false, error: '', borrowLoading: false } },
+  name: 'BookDetail',
+  data() { return { authStore, book: null, loading: false, error: '', borrowLoading: false } },
   async mounted() { await this.loadBook() },
   methods: {
     async loadBook() {

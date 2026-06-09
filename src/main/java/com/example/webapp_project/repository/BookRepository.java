@@ -115,26 +115,39 @@ public class BookRepository {
     }
 
     public boolean delete(Long id) {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM borrow_records WHERE book_id=? AND status='borrowed'")) {
-            ps.setLong(1, id);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next() && rs.getLong(1) > 0)
-                throw new RuntimeException("该图书有未还借阅记录，无法删除"); }
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            // 同一连接内完成检查+删除，消除TOCTOU
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM borrow_records WHERE book_id=? AND status='borrowed'")) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getLong(1) > 0)
+                        throw new IllegalStateException("该图书有未还借阅记录，无法删除");
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM books WHERE id=?")) {
+                ps.setLong(1, id); return ps.executeUpdate() > 0;
+            }
         } catch (SQLException e) {
-            if (e.getMessage().contains("无法删除")) throw new RuntimeException(e.getMessage());
-            throw new RuntimeException("检查图书关联失败", e);
+            throw new RuntimeException("删除图书失败", e);
         }
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM books WHERE id=?")) {
-            ps.setLong(1, id); return ps.executeUpdate() > 0;
-        } catch (SQLException e) { throw new RuntimeException("删除图书失败", e); }
     }
 
+    /** 独立连接：更新可借数量（非事务场景） */
     public void updateAvailableCopies(Long bookId, int delta) {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("UPDATE books SET available_copies = available_copies + ? WHERE id=?")) {
-            ps.setInt(1, delta); ps.setLong(2, bookId); ps.executeUpdate();
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            updateAvailableCopies(conn, bookId, delta);
         } catch (SQLException e) { throw new RuntimeException("更新图书数量失败", e); }
+    }
+
+    /** 事务连接：原子扣减可借数量（防竞态条件） */
+    public void updateAvailableCopies(Connection conn, Long bookId, int delta) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "UPDATE books SET available_copies = available_copies + ? WHERE id=? AND available_copies + ? >= 0")) {
+            ps.setInt(1, delta); ps.setLong(2, bookId); ps.setInt(3, delta);
+            int affected = ps.executeUpdate();
+            if (affected == 0) throw new SQLException("库存不足，扣减失败");
+        }
     }
 
     public long count() {

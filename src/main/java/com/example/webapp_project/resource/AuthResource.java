@@ -27,15 +27,21 @@ public class AuthResource {
         String email = request.get("email");
         String fullName = request.get("fullName");
 
-        if (username == null || username.trim().isEmpty()) return JsonResponse.badRequest("用户名不能为空");
-        if (password == null || password.trim().isEmpty()) return JsonResponse.badRequest("密码不能为空");
-        if (email == null || email.trim().isEmpty()) return JsonResponse.badRequest("邮箱不能为空");
-        if (fullName == null || fullName.trim().isEmpty()) return JsonResponse.badRequest("姓名不能为空");
+        // 先 trim 再校验，确保长度检查是针对有效内容
+        username = username != null ? username.trim() : null;
+        password = password != null ? password.trim() : null;
+        email = email != null ? email.trim() : null;
+        fullName = fullName != null ? fullName.trim() : null;
+
+        if (username == null || username.isEmpty()) return JsonResponse.badRequest("用户名不能为空");
+        if (password == null || password.isEmpty()) return JsonResponse.badRequest("密码不能为空");
+        if (email == null || email.isEmpty()) return JsonResponse.badRequest("邮箱不能为空");
+        if (fullName == null || fullName.isEmpty()) return JsonResponse.badRequest("姓名不能为空");
         if (username.length() < 3 || username.length() > 50) return JsonResponse.badRequest("用户名长度需在 3-50 个字符之间");
         if (password.length() < 6) return JsonResponse.badRequest("密码长度不能少于 6 位");
 
         try {
-            User user = authService.register(username.trim(), password, email.trim(), fullName.trim());
+            User user = authService.register(username, password, email, fullName);
             Map<String, Object> data = new HashMap<>(); data.put("user", user);
             return JsonResponse.success("注册成功", data);
         } catch (IllegalArgumentException e) { return JsonResponse.badRequest(e.getMessage()); }

@@ -14,6 +14,8 @@
         <p class="auth-switch">已有账号？<router-link to="/login">返回登录</router-link></p>
       </div>
       <div class="auth-brand">
+        <img :src="bgImg" alt="" class="brand-bg-img" />
+        <div class="brand-overlay"></div>
         <div class="brand-block">
           <span class="brand-label">Join Us</span>
           <h1 class="brand-title">创建<br/>你的<br/>账号</h1>
@@ -27,10 +29,11 @@
 <script>
 import api from '../services/api.js'
 import { showToast } from '../services/toast.js'
+import bgImg from '../assets/library-bg.png'
 
 export default {
   name: 'Register',
-  data() { return { username: '', password: '', email: '', fullName: '', error: '', loading: false } },
+  data() { return { username: '', password: '', email: '', fullName: '', error: '', loading: false, bgImg } },
   methods: {
     async handleRegister() {
       this.error = ''; this.loading = true
@@ -48,10 +51,10 @@ export default {
 .auth-page { min-height: 100vh; display: flex; align-items: stretch; background: var(--paper); }
 .auth-panel { display: flex; width: 100%; min-height: 100vh; }
 
+/* ─── Left form panel ─── */
 .auth-form-wrap {
   width: 420px; padding: var(--space-2xl); display: flex; flex-direction: column; justify-content: center;
-  background: var(--surface); margin-right: -30px; position: relative; z-index: 1;
-  box-shadow: 4px 0 20px rgba(44, 36, 22, 0.06);
+  position: relative; margin-right: -30px; background: var(--surface); box-shadow: 4px 0 20px rgba(44, 36, 22, 0.06); z-index: 3;
 }
 .form-heading { font-family: var(--font-display); font-size: 1.75rem; font-weight: 400; color: var(--warm-black); margin-bottom: var(--space-xl); letter-spacing: 0.02em; }
 .field { margin-bottom: 14px; }
@@ -62,12 +65,28 @@ export default {
 .auth-switch { text-align: center; margin-top: var(--space-lg); font-size: 0.8125rem; color: var(--warm-gray); }
 .auth-switch a { color: var(--copper); font-weight: 600; }
 
+/* ─── Right brand panel (mirror of Login) ─── */
 .auth-brand {
-  flex: 1; background: var(--warm-black); display: flex; align-items: center;
+  flex: 1; min-width: 0;
+  display: flex; align-items: center;
   padding: var(--space-2xl); position: relative; overflow: hidden;
 }
-.auth-brand::after { content: ''; position: absolute; bottom: -30px; left: -30px; width: 180px; height: 180px; border: 1px solid rgba(250, 248, 244, 0.05); border-radius: 50%; }
-.brand-block { max-width: 280px; margin-left: 60px; position: relative; }
+
+.brand-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center left;
+  z-index: 0;
+}
+
+.brand-overlay {
+  position: absolute; inset: 0;
+  background: rgba(40, 25, 15, 0.5);
+  z-index: 1;
+}
+
+.brand-block { max-width: 280px; margin-left: 60px; position: relative; z-index: 2; }
 .brand-label { font-family: var(--font-body); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--copper); display: block; margin-bottom: var(--space-md); }
 .brand-title { font-family: var(--font-display); font-size: 3rem; line-height: 1.1; color: var(--surface); font-weight: 400; margin-bottom: var(--space-lg); }
 .brand-desc { font-family: var(--font-body); font-size: 0.8125rem; color: rgba(250, 248, 244, 0.5); line-height: 1.6; }

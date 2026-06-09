@@ -62,6 +62,6 @@ public class BookResource {
     public JsonResponse<Void> delete(@PathParam("id") Long id, @Context HttpServletRequest req) {
         if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
         try { bookService.delete(id); return JsonResponse.success("删除图书成功", null); }
-        catch (IllegalArgumentException e) { return JsonResponse.badRequest(e.getMessage()); }
+        catch (IllegalArgumentException | IllegalStateException e) { return JsonResponse.badRequest(e.getMessage()); }
     }
 }
