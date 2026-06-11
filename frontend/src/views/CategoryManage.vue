@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="breadcrumb"><router-link to="/">首页</router-link><span>/</span><span>分类管理</span></div>
+    <div class="breadcrumb"><router-link to="/">Home</router-link><span>/</span><span>Categories</span></div>
     <div class="page-header">
-      <h3>分类管理</h3>
-      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm" @click="openAddModal">+ 新增</button>
+      <h3>Categories</h3>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm" @click="openAddModal">+ + New</button>
     </div>
 
     <div v-if="loading" class="skeleton-table">
@@ -17,15 +17,15 @@
     <div v-else-if="categories.length > 0" class="table-scroll">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>分类名称</th><th>描述</th><th v-if="authStore.isAdmin">操作</th></tr></thead>
+          <thead><tr><th>Category Name</th><th>Description</th><th v-if="authStore.isAdmin">Actions</th></tr></thead>
           <tbody>
             <tr v-for="cat in categories" :key="cat.id">
               <td style="font-weight:600;">{{ cat.name }}</td>
               <td style="color:var(--warm-gray);font-size:0.8125rem;">{{ cat.description || '-' }}</td>
               <td v-if="authStore.isAdmin">
-                <button class="btn btn-sm btn-outline" @click="openEditModal(cat)">编辑</button>
+                <button class="btn btn-sm btn-outline" @click="openEditModal(cat)">Edit</button>
                 <span class="btn-sep"></span>
-                <button class="btn btn-sm btn-danger" @click="confirmDelete(cat)">删除</button>
+                <button class="btn btn-sm btn-danger" @click="confirmDelete(cat)">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -43,20 +43,20 @@
         <line x1="48" y1="8" x2="48" y2="12" stroke="#E2D8CC" stroke-width="1.5"/>
         <line x1="46" y1="10" x2="50" y2="10" stroke="#E2D8CC" stroke-width="1.5"/>
       </svg>
-      <div class="empty-title">暂无分类</div>
-      <div class="empty-desc">还没有创建任何图书分类</div>
-      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm empty-action" @click="openAddModal">新增分类</button>
+      <div class="empty-title">No categories</div>
+      <div class="empty-desc">No categories created yet</div>
+      <button v-if="authStore.isAdmin" class="btn btn-primary btn-sm empty-action" @click="openAddModal">+ NewCategory</button>
     </div>
 
     <!-- Add/Edit modal -->
     <div class="modal-overlay" v-if="showModal" @click.self="closeModal">
       <div class="modal">
-        <div class="modal-header"><h4>{{ isEditing ? '编辑分类' : '新增分类' }}</h4><button class="modal-close" @click="closeModal">&times;</button></div>
+        <div class="modal-header"><h4>{{ isEditing ? 'EditCategory' : '+ NewCategory' }}</h4><button class="modal-close" @click="closeModal">&times;</button></div>
         <form @submit.prevent="handleSubmit" class="modal-body">
-          <div class="form-group"><label>分类名称</label><input v-model="form.name" type="text" placeholder="请输入分类名称" required /></div>
-          <div class="form-group"><label>描述（可选）</label><textarea v-model="form.description" placeholder="请输入分类描述" rows="3"></textarea></div>
+          <div class="form-group"><label>Category Name</label><input v-model="form.name" type="text" placeholder="Enter Category Name" required /></div>
+          <div class="form-group"><label>Description（可选）</label><textarea v-model="form.description" placeholder="Enter CategoryDescription" rows="3"></textarea></div>
           <div v-if="formError" class="error-message">{{ formError }}</div>
-          <div class="modal-actions"><button type="button" class="btn btn-outline" @click="closeModal">取消</button><button type="submit" class="btn btn-primary" :disabled="formLoading">{{ formLoading ? '提交中...' : '确认' }}</button></div>
+          <div class="modal-actions"><button type="button" class="btn btn-outline" @click="closeModal">Cancel</button><button type="submit" class="btn btn-primary" :disabled="formLoading">{{ formLoading ? 'Submitting...' : 'Confirm' }}</button></div>
         </form>
       </div>
     </div>
@@ -64,12 +64,12 @@
     <!-- Delete confirm -->
     <div class="modal-overlay" v-if="showDeleteConfirm" @click.self="showDeleteConfirm = false">
       <div class="modal modal-sm">
-        <div class="modal-header"><h4>确认删除</h4><button class="modal-close" @click="showDeleteConfirm = false">&times;</button></div>
+        <div class="modal-header"><h4>Confirm Delete</h4><button class="modal-close" @click="showDeleteConfirm = false">&times;</button></div>
         <div class="modal-body">
-          <p style="font-size:0.875rem;">删除分类<span class="delete-target-name">{{ deleteTarget?.name }}</span>？</p>
-          <p style="font-size:0.8125rem;color:var(--warm-gray);margin-top:6px;">有关联图书时将无法删除。</p>
+          <p style="font-size:0.875rem;">DeleteCategory<span class="delete-target-name">{{ deleteTarget?.name }}</span>？</p>
+          <p style="font-size:0.8125rem;color:var(--warm-gray);margin-top:6px;">有关联图书时将无法Delete。</p>
           <div v-if="formError" class="error-message" style="margin-top:12px;">{{ formError }}</div>
-          <div class="modal-actions"><button class="btn btn-outline" @click="showDeleteConfirm = false">取消</button><button class="btn btn-danger" @click="handleDelete" :disabled="formLoading">{{ formLoading ? '删除中...' : '确认删除' }}</button></div>
+          <div class="modal-actions"><button class="btn btn-outline" @click="showDeleteConfirm = false">Cancel</button><button class="btn btn-danger" @click="handleDelete" :disabled="formLoading">{{ formLoading ? 'Deleting...' : 'Confirm Delete' }}</button></div>
         </div>
       </div>
     </div>
@@ -88,22 +88,22 @@ export default {
     async fetchCategories() {
       this.loading = true
       try { const res = await api.get('/categories'); if (res.code === 200 && res.data) this.categories = res.data.categories || [] }
-      catch (err) { alert('获取分类列表失败: ' + err.message) } finally { this.loading = false }
+      catch (err) { alert('Failed to load categories: ' + err.message) } finally { this.loading = false }
     },
     openAddModal() { this.isEditing = false; this.editingId = null; this.form = { name: '', description: '' }; this.formError = ''; this.showModal = true },
     openEditModal(cat) { this.isEditing = true; this.editingId = cat.id; this.form = { name: cat.name, description: cat.description || '' }; this.formError = ''; this.showModal = true },
     closeModal() { this.showModal = false; this.formError = '' },
     async handleSubmit() {
-      this.formError = ''; if (!this.form.name.trim()) { this.formError = '分类名称不能为空'; return }
+      this.formError = ''; if (!this.form.name.trim()) { this.formError = 'Category name is required'; return }
       this.formLoading = true
-      try { const res = this.isEditing ? await api.put(`/categories/${this.editingId}`, this.form) : await api.post('/categories', this.form); if (res.code === 200) { this.closeModal(); await this.fetchCategories(); showToast(this.isEditing ? '分类已更新' : '分类已创建') } else { showToast(res.message || '操作失败', 'error') } }
-      catch (err) { showToast(err.message || '操作失败', 'error') } finally { this.formLoading = false }
+      try { const res = this.isEditing ? await api.put(`/categories/${this.editingId}`, this.form) : await api.post('/categories', this.form); if (res.code === 200) { this.closeModal(); await this.fetchCategories(); showToast(this.isEditing ? 'Category updated' : 'Category created') } else { showToast(res.message || 'Operation failed', 'error') } }
+      catch (err) { showToast(err.message || 'Operation failed', 'error') } finally { this.formLoading = false }
     },
     confirmDelete(cat) { this.deleteTarget = cat; this.formError = ''; this.showDeleteConfirm = true },
     async handleDelete() {
       this.formError = ''; this.formLoading = true
-      try { const res = await api.delete(`/categories/${this.deleteTarget.id}`); if (res.code === 200) { this.showDeleteConfirm = false; this.deleteTarget = null; await this.fetchCategories(); showToast('分类已删除') } else { showToast(res.message || '删除失败', 'error') } }
-      catch (err) { showToast(err.message || '删除失败', 'error') } finally { this.formLoading = false }
+      try { const res = await api.delete(`/categories/${this.deleteTarget.id}`); if (res.code === 200) { this.showDeleteConfirm = false; this.deleteTarget = null; await this.fetchCategories(); showToast('Category已Delete') } else { showToast(res.message || 'DeleteFailed', 'error') } }
+      catch (err) { showToast(err.message || 'DeleteFailed', 'error') } finally { this.formLoading = false }
     }
   }
 }

@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
 
 /**
- * 全局认证状态存储（响应式）
- * Layout 组件更新此对象，所有子组件直接导入使用
+ * Global authStatusstore (reactive)
+ * Layout 组件Update此对象，所有子组件直接导入Using
  */
 export const authStore = reactive({
   currentUser: null,

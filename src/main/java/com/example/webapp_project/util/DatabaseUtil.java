@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * 数据库连接工具类 - 使用 HikariCP 连接池管理 MySQL 连接
+ * DB connection utility - Using HikariCP Pool management MySQL Connection
  */
 public class DatabaseUtil {
 
@@ -30,19 +30,19 @@ public class DatabaseUtil {
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
             dataSource = new HikariDataSource(config);
         } catch (Exception e) {
-            throw new ExceptionInInitializerError("HikariCP 初始化失败: " + e.getMessage());
+            throw new ExceptionInInitializerError("HikariCP init failed: " + e.getMessage());
         }
     }
 
     /**
-     * 获取数据库连接
+     * 获取数据库Connection
      */
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
     /**
-     * 关闭连接池
+     * 关闭Connection池
      */
     public static void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {

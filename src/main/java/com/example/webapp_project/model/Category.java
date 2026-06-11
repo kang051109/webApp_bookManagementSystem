@@ -1,7 +1,7 @@
 package com.example.webapp_project.model;
 
 /**
- * 图书分类实体类
+ * 图书CategoryEntity
  */
 public class Category {
 

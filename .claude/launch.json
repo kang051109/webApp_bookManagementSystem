@@ -2,10 +2,17 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "static-server",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "3000", "--bind", "127.0.0.1"],
-      "port": 3000
+      "name": "Spring Boot",
+      "runtimeExecutable": "mvnw",
+      "runtimeArgs": ["spring-boot:run"],
+      "port": 8080
+    },
+    {
+      "name": "Vite Frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "frontend",
+      "port": 5173
     }
   ]
 }

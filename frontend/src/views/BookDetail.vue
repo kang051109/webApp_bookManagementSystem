@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="breadcrumb"><router-link to="/books">图书管理</router-link><span>/</span><span>{{ book?.title || '加载中...' }}</span></div>
+    <div class="breadcrumb"><router-link to="/books">Books</router-link><span>/</span><span>{{ book?.title || 'Loading...' }}</span></div>
     <div class="detail-top">
-      <button class="btn btn-outline btn-sm" @click="$router.push('/books')">&larr; 返回</button>
+      <button class="btn btn-outline btn-sm" @click="$router.push('/books')">&larr; Back</button>
       <div v-if="authStore.isAdmin && book">
-        <button class="btn btn-outline btn-sm" @click="$router.push(`/books/${book.id}/edit`)">编辑</button>
+        <button class="btn btn-outline btn-sm" @click="$router.push(`/books/${book.id}/edit`)">Edit</button>
       </div>
     </div>
 
@@ -27,23 +27,23 @@
       <div class="detail-main">
         <h2 class="detail-title">{{ book.title }}</h2>
         <div class="detail-meta">
-          <div class="meta-row"><span class="meta-label">作者</span><span>{{ book.author }}</span></div>
+          <div class="meta-row"><span class="meta-label">Author</span><span>{{ book.author }}</span></div>
           <div class="meta-row"><span class="meta-label">ISBN</span><span style="font-family:monospace;font-size:0.8125rem;color:var(--warm-gray);">{{ book.isbn }}</span></div>
-          <div class="meta-row"><span class="meta-label">出版社</span><span>{{ book.publisher || '-' }}</span></div>
-          <div class="meta-row"><span class="meta-label">出版年份</span><span>{{ book.publishYear || '-' }}</span></div>
-          <div class="meta-row"><span class="meta-label">分类</span><span>{{ book.categoryName || '-' }}</span></div>
+          <div class="meta-row"><span class="meta-label">Publisher</span><span>{{ book.publisher || '-' }}</span></div>
+          <div class="meta-row"><span class="meta-label">Publish Year</span><span>{{ book.publishYear || '-' }}</span></div>
+          <div class="meta-row"><span class="meta-label">Category</span><span>{{ book.categoryName || '-' }}</span></div>
         </div>
         <div class="detail-desc" v-if="book.description">
-          <h5>简介</h5>
+          <h5>Description</h5>
           <p>{{ book.description }}</p>
         </div>
       </div>
       <div class="detail-side">
         <div class="side-card">
-          <div class="side-stat"><span class="side-stat-num">{{ book.totalCopies }}</span><span class="side-stat-label">总库存</span></div>
-          <div class="side-stat"><span class="side-stat-num" :class="book.availableCopies > 0 ? 'green' : 'red'">{{ book.availableCopies }}</span><span class="side-stat-label">可借</span></div>
+          <div class="side-stat"><span class="side-stat-num">{{ book.totalCopies }}</span><span class="side-stat-label">Total Copies</span></div>
+          <div class="side-stat"><span class="side-stat-num" :class="book.availableCopies > 0 ? 'green' : 'red'">{{ book.availableCopies }}</span><span class="side-stat-label">Available</span></div>
           <button v-if="authStore.currentUser" class="btn btn-primary btn-block" :disabled="book.availableCopies <= 0 || borrowLoading" @click="handleBorrow">
-            {{ borrowLoading ? '借阅中...' : (book.availableCopies > 0 ? '借阅此书' : '暂无余量') }}
+            {{ borrowLoading ? 'Borrowing...' : (book.availableCopies > 0 ? 'Borrow This Book' : 'No Stock') }}
           </button>
         </div>
       </div>
@@ -62,13 +62,13 @@ export default {
   methods: {
     async loadBook() {
       this.loading = true; this.error = ''
-      try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data) this.book = res.data.book; else this.error = '图书不存在' }
-      catch (err) { this.error = '获取图书详情失败: ' + err.message } finally { this.loading = false }
+      try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data) this.book = res.data.book; else this.error = 'Book not found' }
+      catch (err) { this.error = 'Failed to load book details: ' + err.message } finally { this.loading = false }
     },
     async handleBorrow() {
       this.borrowMsg = ''; this.borrowLoading = true
-      try { const res = await api.post('/borrow', { bookId: this.book.id }); if (res.code === 200) { showToast('借阅成功'); await this.loadBook() } else { showToast(res.message || '借阅失败', 'error') } }
-      catch (err) { showToast(err.message || '借阅失败', 'error') } finally { this.borrowLoading = false }
+      try { const res = await api.post('/borrow', { bookId: this.book.id }); if (res.code === 200) { showToast('Borrowing successful'); await this.loadBook() } else { showToast(res.message || 'BorrowFailed', 'error') } }
+      catch (err) { showToast(err.message || 'BorrowFailed', 'error') } finally { this.borrowLoading = false }
     }
   }
 }

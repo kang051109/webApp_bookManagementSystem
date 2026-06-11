@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 图书业务服务（单例）
+ * 图书Service（single例）
  */
 public class BookService {
 
@@ -31,13 +31,13 @@ public class BookService {
 
     public Book findById(Long id) {
         Book book = repo.findById(id);
-        if (book == null) throw new IllegalArgumentException("图书不存在");
+        if (book == null) throw new IllegalArgumentException("Book not found");
         return book;
     }
 
     public Book create(Book book) {
         validate(book);
-        if (repo.findByIsbn(book.getIsbn()) != null) throw new IllegalArgumentException("ISBN 已存在");
+        if (repo.findByIsbn(book.getIsbn()) != null) throw new IllegalArgumentException("ISBN already exists");
         if (book.getTotalCopies() == null || book.getTotalCopies() < 1) book.setTotalCopies(1);
         if (book.getAvailableCopies() == null) book.setAvailableCopies(book.getTotalCopies());
         if (book.getAvailableCopies() > book.getTotalCopies()) book.setAvailableCopies(book.getTotalCopies());
@@ -47,27 +47,27 @@ public class BookService {
     public Book update(Long id, Book book) {
         validate(book);
         Book existing = repo.findById(id);
-        if (existing == null) throw new IllegalArgumentException("图书不存在");
+        if (existing == null) throw new IllegalArgumentException("Book not found");
         Book dup = repo.findByIsbn(book.getIsbn());
-        if (dup != null && !dup.getId().equals(id)) throw new IllegalArgumentException("ISBN 已被其他图书使用");
+        if (dup != null && !dup.getId().equals(id)) throw new IllegalArgumentException("ISBN already used by another book");
 
         int borrowed = existing.getTotalCopies() - existing.getAvailableCopies();
 
-        // 必须先检查总库存不能小于已借出数量
+        // Must checkTotal Copiescannot be less than borrowed
         int newTotal = (book.getTotalCopies() != null && book.getTotalCopies() >= 1)
                 ? book.getTotalCopies() : existing.getTotalCopies();
         if (newTotal < borrowed)
-            throw new IllegalArgumentException("总库存不能低于已借出数量(" + borrowed + ")");
+            throw new IllegalArgumentException("Total copies cannot be less than borrowed (" + borrowed + ")");
         book.setTotalCopies(newTotal);
 
-        // 可借数量 = max(用户指定的值, borrowed)，且不能超过 totalCopies
+        // Available数量 = max(Usergiven value, borrowed), max not exceeding total totalCopies
         if (book.getAvailableCopies() == null) {
-            // 未指定时：保持原比例，但至少要有borrowed本
+            // When unspecified: maintain proportion, minborrowedcopies
             int implied = existing.getAvailableCopies() + (newTotal - existing.getTotalCopies());
             book.setAvailableCopies(Math.max(borrowed, Math.min(newTotal, implied)));
         } else {
             if (book.getAvailableCopies() < borrowed)
-                throw new IllegalArgumentException("可借数量不能低于已借出数量(" + borrowed + ")");
+                throw new IllegalArgumentException("Available copies cannot be less than borrowed (" + borrowed + ")");
             if (book.getAvailableCopies() > newTotal)
                 book.setAvailableCopies(newTotal);
         }
@@ -77,14 +77,14 @@ public class BookService {
     }
 
     public void delete(Long id) {
-        if (repo.findById(id) == null) throw new IllegalArgumentException("图书不存在");
+        if (repo.findById(id) == null) throw new IllegalArgumentException("Book not found");
         repo.delete(id);
     }
 
     private void validate(Book book) {
-        if (book.getIsbn() == null || book.getIsbn().trim().isEmpty()) throw new IllegalArgumentException("ISBN 不能为空");
-        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) throw new IllegalArgumentException("书名不能为空");
-        if (book.getAuthor() == null || book.getAuthor().trim().isEmpty()) throw new IllegalArgumentException("作者不能为空");
+        if (book.getIsbn() == null || book.getIsbn().trim().isEmpty()) throw new IllegalArgumentException("ISBN is required");
+        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) throw new IllegalArgumentException("Title is required");
+        if (book.getAuthor() == null || book.getAuthor().trim().isEmpty()) throw new IllegalArgumentException("Author is required");
         book.setIsbn(book.getIsbn().trim()); book.setTitle(book.getTitle().trim());
         book.setAuthor(book.getAuthor().trim());
         if (book.getPublisher() != null) book.setPublisher(book.getPublisher().trim());

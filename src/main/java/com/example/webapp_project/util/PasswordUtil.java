@@ -3,19 +3,19 @@ package com.example.webapp_project.util;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * 密码加密工具类 - 使用 BCrypt 算法
+ * PasswordPassword utility - Using BCrypt algorithm
  */
 public class PasswordUtil {
 
     /**
-     * 对明文密码进行加密
+     * Hash plaintextPassword
      */
     public static String hash(String plainPassword) {
         return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
     }
 
     /**
-     * 验证明文密码是否与哈希匹配
+     * Verify plaintextPassword是否与hash匹配
      */
     public static boolean verify(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);

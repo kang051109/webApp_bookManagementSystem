@@ -6,20 +6,20 @@
         <div class="brand-overlay"></div>
         <div class="brand-block">
           <span class="brand-label">Book Management</span>
-          <h1 class="brand-title">图书<br/>管理<br/>系统</h1>
-          <p class="brand-desc">登录以管理图书库存与借阅</p>
+          <h1 class="brand-title">Library<br/>System</h1>
+          <p class="brand-desc">Login to manage books & borrowings</p>
         </div>
       </div>
       <div class="auth-form-wrap">
-        <h2 class="form-heading">登录</h2>
+        <h2 class="form-heading">Login</h2>
         <form @submit.prevent="handleLogin">
-          <div class="field"><input v-model="username" type="text" placeholder="用户名" required :disabled="loading" /></div>
-          <div class="field"><input v-model="password" type="password" placeholder="密码" required :disabled="loading" /></div>
+          <div class="field"><input v-model="username" type="text" placeholder="UserUsername" required :disabled="loading" /></div>
+          <div class="field"><input v-model="password" type="password" placeholder="Password" required :disabled="loading" /></div>
           <div v-if="error" class="error-message">{{ error }}</div>
           <div v-if="success" class="success-message">{{ success }}</div>
-          <button type="submit" class="btn btn-primary btn-block" :disabled="loading">{{ loading ? '登录中...' : '登 录' }}</button>
+          <button type="submit" class="btn btn-primary btn-block" :disabled="loading">{{ loading ? 'Logging in...' : 'Login' }}</button>
         </form>
-        <p class="auth-switch">还没有账号？<router-link to="/register">注册</router-link></p>
+        <p class="auth-switch">No account? <router-link to="/register">Register</router-link></p>
       </div>
     </div>
   </div>
@@ -35,8 +35,8 @@ export default {
   methods: {
     async handleLogin() {
       this.error = ''; this.success = ''; this.loading = true
-      try { const res = await api.post('/auth/login', { username: this.username, password: this.password }); if (res.code === 200) { this.success = '登录成功！'; setTimeout(() => { this.$router.push('/dashboard') }, 500) } else { this.error = res.message || '登录失败' } }
-      catch (err) { this.error = err.message || '登录失败，请重试' } finally { this.loading = false }
+      try { const res = await api.post('/auth/login', { username: this.username, password: this.password }); if (res.code === 200) { this.success = 'Login successful！'; setTimeout(() => { this.$router.push('/dashboard') }, 500) } else { this.error = res.message || 'Login failed' } }
+      catch (err) { this.error = err.message || 'Login failed, please retry' } finally { this.loading = false }
     }
   }
 }

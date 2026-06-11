@@ -2,24 +2,24 @@
   <div class="auth-page">
     <div class="auth-panel">
       <div class="auth-form-wrap">
-        <h2 class="form-heading">创建账号</h2>
+        <h2 class="form-heading">Create Account</h2>
         <form @submit.prevent="handleRegister">
-          <div class="field"><input v-model="username" type="text" placeholder="用户名 (3-50个字符)" required :disabled="loading" /></div>
-          <div class="field"><input v-model="password" type="password" placeholder="密码 (至少6位)" required :disabled="loading" /></div>
-          <div class="field"><input v-model="email" type="email" placeholder="邮箱" required :disabled="loading" /></div>
-          <div class="field"><input v-model="fullName" type="text" placeholder="姓名" required :disabled="loading" /></div>
+          <div class="field"><input v-model="username" type="text" placeholder="UserUsername (3-50))" required :disabled="loading" /></div>
+          <div class="field"><input v-model="password" type="password" placeholder="Password (At least 6位)" required :disabled="loading" /></div>
+          <div class="field"><input v-model="email" type="email" placeholder="Email" required :disabled="loading" /></div>
+          <div class="field"><input v-model="fullName" type="text" placeholder="姓Username" required :disabled="loading" /></div>
           <div v-if="error" class="error-message">{{ error }}</div>
-          <button type="submit" class="btn btn-primary btn-block" :disabled="loading">{{ loading ? '注册中...' : '注 册' }}</button>
+          <button type="submit" class="btn btn-primary btn-block" :disabled="loading">{{ loading ? 'Registering...' : 'Register' }}</button>
         </form>
-        <p class="auth-switch">已有账号？<router-link to="/login">返回登录</router-link></p>
+        <p class="auth-switch">Already have an account? <router-link to="/login">Back to Login</router-link></p>
       </div>
       <div class="auth-brand">
         <img :src="bgImg" alt="" class="brand-bg-img" />
         <div class="brand-overlay"></div>
         <div class="brand-block">
           <span class="brand-label">Join Us</span>
-          <h1 class="brand-title">创建<br/>你的<br/>账号</h1>
-          <p class="brand-desc">注册后即可浏览图书、借阅与管理</p>
+          <h1 class="brand-title">创建<br/>你的<br/>account</h1>
+          <p class="brand-desc">Register to browse, borrow & manage</p>
         </div>
       </div>
     </div>
@@ -39,9 +39,9 @@ export default {
       this.error = ''; this.loading = true
       try {
         const res = await api.post('/auth/register', { username: this.username, password: this.password, email: this.email, fullName: this.fullName })
-        if (res.code === 200) { showToast('注册成功'); setTimeout(() => { this.$router.push('/login') }, 1000) }
-        else { this.error = res.message || '注册失败' }
-      } catch (err) { this.error = err.message || '注册失败，请重试' } finally { this.loading = false }
+        if (res.code === 200) { showToast('Registration successful'); setTimeout(() => { this.$router.push('/login') }, 1000) }
+        else { this.error = res.message || 'RegisterFailed' }
+      } catch (err) { this.error = err.message || 'RegisterFailed，请重试' } finally { this.loading = false }
     }
   }
 }

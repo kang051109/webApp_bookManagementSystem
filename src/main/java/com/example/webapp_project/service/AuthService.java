@@ -10,8 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 /**
- * 认证服务 - 处理用户注册、登录、会话管理（单例）
- * 启动时自动初始化管理员账号
+ * Auth service - ProcessingUserRegister、Login、会话管理（single例）
+ * Auto-init on startupAdminaccount
  */
 public class AuthService {
 
@@ -28,44 +28,44 @@ public class AuthService {
     }
 
     /**
-     * 自动初始化/修复管理员密码 - 使用 INSERT ON DUPLICATE KEY UPDATE 单条语句
+     * Auto-init/FixAdminPassword - Using INSERT ON DUPLICATE KEY UPDATE singleitemsstatement
      */
     private synchronized void initAdminUser() {
         if (initialized) return;
         initialized = true;
         String hash = PasswordUtil.hash("admin123");
-        System.out.println("[Auth] 哈希: " + hash);
+        System.out.println("[Auth] hash: " + hash);
 
-        // 仅在 admin 不存在时创建，不覆盖已有密码
+        // Only when admin create if absent, never overwrite existingPassword
         String sql = "INSERT INTO users (username,password_hash,email,full_name,role) " +
-                     "VALUES ('admin',?,'admin@book.com','系统管理员','admin') " +
+                     "VALUES ('admin',?,'admin@book.com','系统Admin','admin') " +
                      "ON DUPLICATE KEY UPDATE username=username";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, hash);
             int rows = ps.executeUpdate();
-            if (rows > 0) System.out.println("[Auth] 管理员账号已就绪");
+            if (rows > 0) System.out.println("[Auth] Admin account ready");
         } catch (Exception e) {
-            System.err.println("[Auth] 初始化失败: " + e.getMessage());
+            System.err.println("[Auth] Init failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public User register(String username, String password, String email, String fullName) {
         if (userRepository.findByUsername(username) != null)
-            throw new IllegalArgumentException("用户名已被注册");
+            throw new IllegalArgumentException("Username already taken");
         if (userRepository.findByEmail(email) != null)
-            throw new IllegalArgumentException("邮箱已被注册");
+            throw new IllegalArgumentException("Email already registered");
         String passwordHash = PasswordUtil.hash(password);
         return userRepository.save(username, passwordHash, email, fullName, "user");
     }
 
     public User login(String username, String password, HttpServletRequest request) {
         User user = userRepository.findByUsername(username);
-        if (user == null) throw new IllegalArgumentException("用户名或密码错误");
+        if (user == null) throw new IllegalArgumentException("Invalid username or password");
         if (!PasswordUtil.verify(password, user.getPasswordHash()))
-            throw new IllegalArgumentException("用户名或密码错误");
+            throw new IllegalArgumentException("Invalid username or password");
         HttpSession session = request.getSession(true);
         session.setAttribute(SESSION_USER_KEY, user.getId());
         session.setMaxInactiveInterval(3600);
@@ -89,6 +89,14 @@ public class AuthService {
     public boolean isAdmin(HttpServletRequest request) {
         User user = getCurrentUser(request);
         return user != null && "admin".equals(user.getRole());
+    }
+
+    public void changePassword(Long userId, String oldPwd, String newPwd) {
+        User user = userRepository.findById(userId);
+        if (user == null) throw new IllegalArgumentException("User not found");
+        if (!PasswordUtil.verify(oldPwd, user.getPasswordHash()))
+            throw new IllegalArgumentException("Old password is incorrect");
+        userRepository.updatePassword(userId, PasswordUtil.hash(newPwd));
     }
 
     public Long getCurrentUserId(HttpServletRequest request) {

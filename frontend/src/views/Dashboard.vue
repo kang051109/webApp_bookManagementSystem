@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="breadcrumb"><router-link to="/dashboard">仪表板</router-link></div>
-    <div class="page-header"><h3>仪表板</h3></div>
+    <div class="breadcrumb"><router-link to="/dashboard">Dashboard</router-link></div>
+    <div class="page-header"><h3>Dashboard</h3></div>
 
     <!-- Issue 2: Skeleton loading -->
     <div v-if="loading" class="dash-grid">
@@ -14,33 +14,33 @@
     <div v-else class="dash-grid">
       <div class="stat-block total-books">
         <span class="stat-figure">{{ stats.totalBooks }}</span>
-        <span class="stat-label">藏书总量</span>
+        <span class="stat-label">Total Books <span class="trend">{{ stats.trends?.books }}</span></span>
       </div>
       <div class="stat-block">
         <span class="stat-figure">{{ stats.totalUsers }}</span>
-        <span class="stat-label">注册用户</span>
+        <span class="stat-label">RegisterUser <span class="trend">{{ stats.trends?.users }}</span></span>
       </div>
       <div class="stat-block">
         <span class="stat-figure">{{ stats.activeBorrows }}</span>
-        <span class="stat-label">借阅中</span>
+        <span class="stat-label">Borrow中 <span class="trend">{{ stats.trends?.active }}</span></span>
       </div>
       <div class="stat-block">
         <span class="stat-figure">{{ stats.totalCategories }}</span>
-        <span class="stat-label">分类数</span>
+        <span class="stat-label">Categories</span>
       </div>
       <div class="stat-block overdue-block">
         <span class="stat-figure">{{ stats.overdueBorrows }}</span>
-        <span class="stat-label">逾期未还</span>
+        <span class="stat-label">Overdue <span class="trend">{{ stats.trends?.overdue }}</span></span>
       </div>
     </div>
 
     <div class="quick-section">
-      <h4 class="quick-heading">快速操作</h4>
+      <h4 class="quick-heading">QuickActions</h4>
       <div class="quick-row">
-        <button class="quick-btn" @click="$router.push('/books')">浏览图书</button>
-        <button class="quick-btn" @click="$router.push('/my-borrows')">我的借阅</button>
-        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/books/new')">新增图书</button>
-        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/categories')">管理分类</button>
+        <button class="quick-btn" @click="$router.push('/books')">Browse Books</button>
+        <button class="quick-btn" @click="$router.push('/my-borrows')">My Borrows</button>
+        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/books/new')">New Book</button>
+        <button v-if="authStore.isAdmin" class="quick-btn" @click="$router.push('/categories')">Manage Categories</button>
       </div>
     </div>
   </div>
@@ -51,8 +51,8 @@ import api from '../services/api.js'
 import { authStore } from '../services/authStore.js'
 export default {
   name: 'Dashboard',
-  data() { return { authStore, stats: { totalBooks: 0, totalUsers: 0, totalCategories: 0, activeBorrows: 0, overdueBorrows: 0 }, loading: false } },
-  async mounted() { await this.loadStats() },
+  data() { return { authStore, stats: { totalBooks: 0, totalUsers: 0, totalCategories: 0, activeBorrows: 0, overdueBorrows: 0, trends:{} }, loading: false } },
+  async mounted() { document.title = 'Dashboard - Book Management System'; await this.loadStats() },
   methods: {
     async loadStats() {
       this.loading = true
@@ -70,6 +70,7 @@ export default {
 .total-books .stat-label { color: rgba(250, 248, 244, 0.6); }
 .stat-figure { font-family: var(--font-display); font-size: 2.5rem; line-height: 1; color: var(--warm-black); font-weight: 400; }
 .stat-label { font-family: var(--font-body); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--warm-gray); }
+.trend { font-size: 0.625rem; margin-left: 4px; opacity: 0.7; }
 .overdue-block { background: var(--red-earth-light); border-left: 3px solid var(--red-earth); }
 .overdue-block .stat-figure { color: var(--red-earth); }
 .overdue-block .stat-label { color: var(--red-earth); }

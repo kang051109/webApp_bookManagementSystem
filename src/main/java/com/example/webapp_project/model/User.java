@@ -3,7 +3,7 @@ package com.example.webapp_project.model;
 import java.time.LocalDateTime;
 
 /**
- * 用户实体类
+ * UserEntity
  */
 public class User {
 
@@ -51,7 +51,7 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     /**
-     * 返回不包含敏感信息的安全用户对象（用于 API 响应）
+     * BackSafe user object without sensitive infoUserobject (for API response)
      */
     public static User safeUser(User user) {
         if (user == null) return null;

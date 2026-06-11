@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 分类数据访问层 - JDBC 实现（单例）
+ * CategoriesData access layer - JDBC Implementation (singleton)
  */
 public class CategoryRepository {
 
@@ -21,7 +21,7 @@ public class CategoryRepository {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT * FROM categories ORDER BY id")) {
             while (rs.next()) list.add(map(rs));
-        } catch (SQLException e) { throw new RuntimeException("查询分类列表失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to list categories", e); }
         return list;
     }
 
@@ -30,7 +30,7 @@ public class CategoryRepository {
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE id=?")) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return map(rs); }
-        } catch (SQLException e) { throw new RuntimeException("查询分类失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to query category", e); }
         return null;
     }
 
@@ -39,7 +39,7 @@ public class CategoryRepository {
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE name=?")) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return map(rs); }
-        } catch (SQLException e) { throw new RuntimeException("查询分类失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to query category", e); }
         return null;
     }
 
@@ -51,8 +51,8 @@ public class CategoryRepository {
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) return findById(keys.getLong(1)); }
         } catch (SQLException e) {
-            if (e.getErrorCode() == 1062) throw new RuntimeException("分类名称已存在");
-            throw new RuntimeException("新增分类失败", e);
+            if (e.getErrorCode() == 1062) throw new RuntimeException("Category name already exists");
+            throw new RuntimeException("Failed to create category", e);
         }
         return null;
     }
@@ -63,28 +63,28 @@ public class CategoryRepository {
             ps.setString(1, name); ps.setString(2, description); ps.setLong(3, id);
             if (ps.executeUpdate() > 0) return findById(id);
         } catch (SQLException e) {
-            if (e.getErrorCode() == 1062) throw new RuntimeException("分类名称已存在");
-            throw new RuntimeException("更新分类失败", e);
+            if (e.getErrorCode() == 1062) throw new RuntimeException("Category name already exists");
+            throw new RuntimeException("Failed to update category", e);
         }
         return null;
     }
 
     public boolean delete(Long id) {
         try (Connection conn = DatabaseUtil.getConnection()) {
-            // 同一连接内完成检查+删除，消除TOCTOU
+            // Check+delete in same connection+Delete, eliminatingTOCTOU
             try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT COUNT(*) FROM books WHERE category_id=?")) {
                 ps.setLong(1, id);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getLong(1) > 0)
-                        throw new IllegalStateException("该分类下有图书，无法删除");
+                        throw new IllegalStateException("Cannot delete: category has books");
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM categories WHERE id=?")) {
                 ps.setLong(1, id); return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("删除分类失败", e);
+            throw new RuntimeException("Failed to delete category", e);
         }
     }
 
@@ -93,7 +93,7 @@ public class CategoryRepository {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM categories")) {
             if (rs.next()) return rs.getLong(1);
-        } catch (SQLException e) { throw new RuntimeException("统计分类数失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to count categories", e); }
         return 0;
     }
 

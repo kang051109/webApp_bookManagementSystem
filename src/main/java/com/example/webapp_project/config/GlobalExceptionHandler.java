@@ -27,8 +27,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<JsonResponse<Void>> handleGeneral(Exception e) {
-        logger.log(Level.SEVERE, "服务器内部错误", e);
+        logger.log(Level.SEVERE, "Internal server error", e);
         return ResponseEntity.status(500)
-                .body(JsonResponse.serverError("服务器内部错误: " + e.getMessage()));
+                .body(JsonResponse.serverError("Internal server error: " + e.getMessage()));
     }
 }

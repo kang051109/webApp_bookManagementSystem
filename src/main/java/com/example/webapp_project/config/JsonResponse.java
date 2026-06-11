@@ -1,7 +1,7 @@
 package com.example.webapp_project.config;
 
 /**
- * 统一 JSON 响应包装类
+ * Unified JSON response wrapper
  */
 public class JsonResponse<T> {
 
@@ -17,42 +17,42 @@ public class JsonResponse<T> {
         this.data = data;
     }
 
-    /** 成功响应（带数据） */
+    /** Success response (with data) */
     public static <T> JsonResponse<T> success(T data) {
-        return new JsonResponse<>(200, "操作成功", data);
+        return new JsonResponse<>(200, "Success", data);
     }
 
-    /** 成功响应（自定义消息） */
+    /** Success response (custom msg) */
     public static <T> JsonResponse<T> success(String message, T data) {
         return new JsonResponse<>(200, message, data);
     }
 
-    /** 失败响应 */
+    /** Error response */
     public static <T> JsonResponse<T> error(int code, String message) {
         return new JsonResponse<>(code, message, null);
     }
 
-    /** 请求错误 (400) */
+    /** Bad request (400) */
     public static <T> JsonResponse<T> badRequest(String message) {
         return new JsonResponse<>(400, message, null);
     }
 
-    /** 未授权 (401) */
+    /** Unauthorized (401) */
     public static <T> JsonResponse<T> unauthorized(String message) {
         return new JsonResponse<>(401, message, null);
     }
 
-    /** 禁止访问 (403) */
+    /** Forbidden (403) */
     public static <T> JsonResponse<T> forbidden(String message) {
         return new JsonResponse<>(403, message, null);
     }
 
-    /** 未找到 (404) */
+    /** Not found (404) */
     public static <T> JsonResponse<T> notFound(String message) {
         return new JsonResponse<>(404, message, null);
     }
 
-    /** 服务器错误 (500) */
+    /** Server error (500) */
     public static <T> JsonResponse<T> serverError(String message) {
         return new JsonResponse<>(500, message, null);
     }

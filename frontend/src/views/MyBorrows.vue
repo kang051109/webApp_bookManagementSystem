@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="breadcrumb"><router-link to="/">首页</router-link><span>/</span><span>我的借阅</span></div>
+    <div class="breadcrumb"><router-link to="/">Home</router-link><span>/</span><span>My Borrows</span></div>
     <div class="page-header">
-      <h3>我的借阅</h3>
-      <button v-if="authStore.isAdmin" class="btn btn-outline btn-sm" @click="$router.push('/admin/borrows')">全部记录</button>
+      <h3>My Borrows</h3>
+      <button v-if="authStore.isAdmin" class="btn btn-outline btn-sm" @click="$router.push('/admin/borrows')">All Records</button>
     </div>
 
     <div v-if="loading" class="skeleton-table">
@@ -21,7 +21,7 @@
     <div v-else-if="records.length > 0" class="table-scroll">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>图书</th><th>借阅日期</th><th>应还日期</th><th>归还日期</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>图书</th><th>Borrow日期</th><th>Due Date</th><th>Return日期</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             <tr v-for="r in records" :key="r.id">
               <td><router-link :to="`/books/${r.bookId}`" class="book-link">{{ r.bookTitle }}</router-link></td>
@@ -30,7 +30,7 @@
               <td style="color:var(--warm-gray);font-size:0.8125rem;">{{ r.returnDate ? formatDate(r.returnDate) : '-' }}</td>
               <td><span :class="'status-tag ' + r.status">{{ statusLabel(r.status) }}</span></td>
               <td>
-                <button v-if="r.status === 'borrowed'" class="btn btn-sm btn-primary" @click="handleReturn(r)" :disabled="returnLoading === r.id">{{ returnLoading === r.id ? '归还中...' : '归还' }}</button>
+                <button v-if="r.status === 'borrowed'" class="btn btn-sm btn-primary" @click="handleReturn(r)" :disabled="returnLoading === r.id">{{ returnLoading === r.id ? 'Returning...' : 'Return' }}</button>
                 <span v-else style="color:var(--warm-gray-light);font-size:0.8125rem;">-</span>
               </td>
             </tr>
@@ -44,9 +44,9 @@
         <rect x="12" y="16" width="40" height="32" rx="2" stroke="#C4BAAE" stroke-width="1.5" fill="#FAF8F4"/>
         <path d="M20 28 L28 36 L44 24" stroke="#C4BAAE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <div class="empty-title">暂无借阅记录</div>
-      <div class="empty-desc">你还没有借阅任何图书</div>
-      <button class="btn btn-primary btn-sm empty-action" @click="$router.push('/books')">去浏览图书</button>
+      <div class="empty-title">暂无Borrow记录</div>
+      <div class="empty-desc">你还没有Borrow任何图书</div>
+      <button class="btn btn-primary btn-sm empty-action" @click="$router.push('/books')">去Browse Books</button>
     </div>
 
     <div v-if="msg" :class="msgType" style="margin-top:var(--space-md);">{{ msg }}</div>
@@ -69,12 +69,12 @@ export default {
     },
     async handleReturn(record) {
       this.msg = ''; this.returnLoading = record.id
-      try { const res = await api.post(`/borrow/${record.id}/return`); if (res.code === 200) { showToast('归还成功'); await this.loadRecords() } else { showToast(res.message || '归还失败', 'error') } }
-      catch (err) { showToast(err.message || '归还失败', 'error') } finally { this.returnLoading = null }
+      try { const res = await api.post(`/borrow/${record.id}/return`); if (res.code === 200) { showToast('Return successful'); await this.loadRecords() } else { showToast(res.message || 'ReturnFailed', 'error') } }
+      catch (err) { showToast(err.message || 'ReturnFailed', 'error') } finally { this.returnLoading = null }
     },
     isOverdue(r) { return r.status === 'borrowed' && new Date(r.dueDate) < new Date() },
-    statusLabel(s) { return { borrowed: '借阅中', returned: '已归还', overdue: '已逾期' }[s] || s },
-    formatDate(dt) { if (!dt) return '-'; return new Date(dt).toLocaleDateString('zh-CN') }
+    statusLabel(s) { return { borrowed: 'Borrow中', returned: '已Return', overdue: 'Overdue' }[s] || s },
+    formatDate(dt) { if (!dt) return '-'; return new Date(dt).toLocaleDateString('en-US') }
   }
 }
 </script>

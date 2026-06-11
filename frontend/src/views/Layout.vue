@@ -5,12 +5,19 @@
         <button class="menu-toggle" @click="sidebarOpen = !sidebarOpen">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
-        <h2>图书管理系统</h2>
+        <h2>Book Management System</h2>
       </div>
       <div class="header-right">
+        <button class="header-btn" title="全局Search (Ctrl+K)" @click="$emit('search')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="kbd-hint">Ctrl+K</span>
+        </button>
+        <button class="header-btn" title="Dark Mode" @click="toggleDark">
+          {{ isDark ? '☀' : '☾' }}
+        </button>
         <span class="user-info">{{ authStore.currentUser ? authStore.currentUser.fullName : '' }}</span>
-        <span v-if="authStore.isAdmin" class="admin-badge">管理员</span>
-        <button class="btn-logout" @click="handleLogout">退出</button>
+        <span v-if="authStore.isAdmin" class="admin-badge">Admin</span>
+        <button class="btn-logout" @click="handleLogout">Logout</button>
       </div>
     </header>
     <div class="layout-body">
@@ -19,23 +26,31 @@
         <nav class="sidebar-nav">
           <router-link to="/dashboard" class="nav-item" @click="sidebarOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="4" rx="1"/></svg>
-            仪表板
+            Dashboard
           </router-link>
           <router-link to="/books" class="nav-item" @click="sidebarOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-            图书管理
+            Books
           </router-link>
           <router-link to="/categories" class="nav-item" @click="sidebarOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            分类管理
+            Categories
           </router-link>
           <router-link to="/my-borrows" class="nav-item" @click="sidebarOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            我的借阅
+            My Borrows
           </router-link>
           <router-link v-if="authStore.isAdmin" to="/admin/borrows" class="nav-item" @click="sidebarOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-            全部借阅
+            All Borrows
+          </router-link>
+          <router-link v-if="authStore.isAdmin" to="/admin/users" class="nav-item" @click="sidebarOpen = false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            User Management
+          </router-link>
+          <router-link to="/change-password" class="nav-item" @click="sidebarOpen = false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Change Password
           </router-link>
         </nav>
       </aside>
@@ -53,21 +68,26 @@
 <script>
 import api from '../services/api.js'
 import { authStore } from '../services/authStore.js'
+
 export default {
   name: 'Layout',
-  data() { return { authStore, sidebarOpen: false } },
+  data() { return { authStore, sidebarOpen: false, isDark: false } },
   async mounted() {
+    this.isDark = localStorage.getItem('dark')==='1'
     try {
       const res = await api.get('/auth/me')
       if (res.code === 200 && res.data && res.data.user) {
         authStore.currentUser = res.data.user
         authStore.isAdmin = res.data.user.role === 'admin'
-      } else {
-        this.$router.push('/login')
-      }
+      } else { this.$router.push('/login') }
     } catch { this.$router.push('/login') }
   },
   methods: {
+    toggleDark() {
+      this.isDark = !this.isDark
+      document.getElementById('app-root').className = this.isDark ? 'dark' : ''
+      localStorage.setItem('dark', this.isDark ? '1' : '0')
+    },
     async handleLogout() {
       try { await api.post('/auth/logout') } catch {}
       authStore.currentUser = null
@@ -87,6 +107,9 @@ export default {
 .header-right { display: flex; align-items: center; gap: 14px; }
 .user-info { font-size: 0.8125rem; opacity: 0.8; }
 .admin-badge { font-size: 0.6875rem; background: var(--ochre); color: var(--warm-black); padding: 2px 8px; font-weight: 700; letter-spacing: 0.05em; }
+.header-btn { background: none; border: none; color: var(--surface); cursor: pointer; padding: 4px 8px; display: flex; align-items: center; gap: 4px; opacity: 0.7; transition: opacity 0.15s; font-size: 0.75rem; }
+.header-btn:hover { opacity: 1; }
+.kbd-hint { font-size: 0.625rem; opacity: 0.5; }
 .btn-logout { padding: 5px 14px; border: 1px solid rgba(250, 248, 244, 0.25); background: transparent; color: var(--surface); font-family: var(--font-body); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
 .btn-logout:hover { background: rgba(250, 248, 244, 0.08); }
 .layout-body { display: flex; flex: 1; }

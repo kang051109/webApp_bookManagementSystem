@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 图书数据访问层 - JDBC 实现（单例）
+ * Book data access layer - JDBC Implementation (singleton)
  */
 public class BookRepository {
 
@@ -34,7 +34,7 @@ public class BookRepository {
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) { while (rs.next()) list.add(map(rs)); }
-        } catch (SQLException e) { throw new RuntimeException("查询图书列表失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to list books", e); }
         return list;
     }
 
@@ -50,7 +50,7 @@ public class BookRepository {
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getLong(1); }
-        } catch (SQLException e) { throw new RuntimeException("统计图书数失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to count books", e); }
         return 0;
     }
 
@@ -60,7 +60,7 @@ public class BookRepository {
                  "SELECT b.*, c.name AS category_name FROM books b LEFT JOIN categories c ON b.category_id=c.id WHERE b.id=?")) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return map(rs); }
-        } catch (SQLException e) { throw new RuntimeException("查询图书失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to query book", e); }
         return null;
     }
 
@@ -70,7 +70,7 @@ public class BookRepository {
                  "SELECT b.*, c.name AS category_name FROM books b LEFT JOIN categories c ON b.category_id=c.id WHERE b.isbn=?")) {
             ps.setString(1, isbn);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return map(rs); }
-        } catch (SQLException e) { throw new RuntimeException("查询图书失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to query book", e); }
         return null;
     }
 
@@ -89,8 +89,8 @@ public class BookRepository {
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) return findById(keys.getLong(1)); }
         } catch (SQLException e) {
-            if (e.getErrorCode() == 1062) throw new RuntimeException("ISBN 已存在");
-            throw new RuntimeException("新增图书失败", e);
+            if (e.getErrorCode() == 1062) throw new RuntimeException("ISBN already exists");
+            throw new RuntimeException("Failed to create book", e);
         }
         return null;
     }
@@ -108,45 +108,45 @@ public class BookRepository {
             ps.setString(9, book.getDescription()); ps.setLong(10, book.getId());
             if (ps.executeUpdate() > 0) return findById(book.getId());
         } catch (SQLException e) {
-            if (e.getErrorCode() == 1062) throw new RuntimeException("ISBN 已存在");
-            throw new RuntimeException("更新图书失败", e);
+            if (e.getErrorCode() == 1062) throw new RuntimeException("ISBN already exists");
+            throw new RuntimeException("Failed to update book", e);
         }
         return null;
     }
 
     public boolean delete(Long id) {
         try (Connection conn = DatabaseUtil.getConnection()) {
-            // 同一连接内完成检查+删除，消除TOCTOU
+            // Check+delete in same connection+Delete, eliminatingTOCTOU
             try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT COUNT(*) FROM borrow_records WHERE book_id=? AND status='borrowed'")) {
                 ps.setLong(1, id);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getLong(1) > 0)
-                        throw new IllegalStateException("该图书有未还借阅记录，无法删除");
+                        throw new IllegalStateException("Cannot delete: book has active borrows");
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM books WHERE id=?")) {
                 ps.setLong(1, id); return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("删除图书失败", e);
+            throw new RuntimeException("Failed to delete book", e);
         }
     }
 
-    /** 独立连接：更新可借数量（非事务场景） */
+    /** Independent connection: updateAvailablequantity (non-tx) */
     public void updateAvailableCopies(Long bookId, int delta) {
         try (Connection conn = DatabaseUtil.getConnection()) {
             updateAvailableCopies(conn, bookId, delta);
-        } catch (SQLException e) { throw new RuntimeException("更新图书数量失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to update book quantity", e); }
     }
 
-    /** 事务连接：原子扣减可借数量（防竞态条件） */
+    /** Tx connection: atomic decrementAvailablequantity (race-safe)items) */
     public void updateAvailableCopies(Connection conn, Long bookId, int delta) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(
                 "UPDATE books SET available_copies = available_copies + ? WHERE id=? AND available_copies + ? >= 0")) {
             ps.setInt(1, delta); ps.setLong(2, bookId); ps.setInt(3, delta);
             int affected = ps.executeUpdate();
-            if (affected == 0) throw new SQLException("库存不足，扣减失败");
+            if (affected == 0) throw new SQLException("Insufficient stock");
         }
     }
 
@@ -155,7 +155,7 @@ public class BookRepository {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM books")) {
             if (rs.next()) return rs.getLong(1);
-        } catch (SQLException e) { throw new RuntimeException("统计图书数失败", e); }
+        } catch (SQLException e) { throw new RuntimeException("Failed to count books", e); }
         return 0;
     }
 

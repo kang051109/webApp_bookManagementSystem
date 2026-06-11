@@ -3,17 +3,17 @@ package com.example.webapp_project.model;
 import java.time.LocalDateTime;
 
 /**
- * 借阅记录实体类
+ * Borrow记录Entity
  */
 public class BorrowRecord {
 
     private Long id;
     private Long userId;
-    private String username;          // 关联用户名（非数据库字段）
-    private String userFullName;      // 关联用户姓名（非数据库字段）
+    private String username;          // 关联User名(non-DB field)
+    private String userFullName;      // 关联User姓名(non-DB field)
     private Long bookId;
-    private String bookTitle;         // 关联书名（非数据库字段）
-    private String bookIsbn;          // 关联 ISBN（非数据库字段）
+    private String bookTitle;         // 关联Title(non-DB field)
+    private String bookIsbn;          // 关联 ISBN(non-DB field)
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;

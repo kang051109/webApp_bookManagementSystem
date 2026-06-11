@@ -3,7 +3,7 @@ package com.example.webapp_project.model;
 import java.time.LocalDateTime;
 
 /**
- * 图书实体类
+ * 图书Entity
  */
 public class Book {
 
@@ -14,7 +14,7 @@ public class Book {
     private String publisher;
     private Integer publishYear;
     private Long categoryId;
-    private String categoryName;   // 关联的分类名称（非数据库字段）
+    private String categoryName;   // RelatedCategory Name(non-DB field)
     private Integer totalCopies;
     private Integer availableCopies;
     private String description;

@@ -5,7 +5,7 @@ import com.example.webapp_project.repository.CategoryRepository;
 import java.util.List;
 
 /**
- * 分类业务服务（单例）
+ * CategoryService（single例）
  */
 public class CategoryService {
 
@@ -19,26 +19,26 @@ public class CategoryService {
 
     public Category findById(Long id) {
         Category c = repo.findById(id);
-        if (c == null) throw new IllegalArgumentException("分类不存在");
+        if (c == null) throw new IllegalArgumentException("Category not found");
         return c;
     }
 
     public Category create(String name, String description) {
-        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("分类名称不能为空");
-        if (repo.findByName(name.trim()) != null) throw new IllegalArgumentException("分类名称已存在");
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Category name is required");
+        if (repo.findByName(name.trim()) != null) throw new IllegalArgumentException("Category name already exists");
         return repo.save(name.trim(), description != null ? description.trim() : null);
     }
 
     public Category update(Long id, String name, String description) {
-        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("分类名称不能为空");
-        if (repo.findById(id) == null) throw new IllegalArgumentException("分类不存在");
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Category name is required");
+        if (repo.findById(id) == null) throw new IllegalArgumentException("Category not found");
         Category dup = repo.findByName(name.trim());
-        if (dup != null && !dup.getId().equals(id)) throw new IllegalArgumentException("分类名称已存在");
+        if (dup != null && !dup.getId().equals(id)) throw new IllegalArgumentException("Category name already exists");
         return repo.update(id, name.trim(), description != null ? description.trim() : null);
     }
 
     public void delete(Long id) {
-        if (repo.findById(id) == null) throw new IllegalArgumentException("分类不存在");
+        if (repo.findById(id) == null) throw new IllegalArgumentException("Category not found");
         repo.delete(id);
     }
 }

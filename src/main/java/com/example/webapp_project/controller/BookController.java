@@ -32,23 +32,23 @@ public class BookController {
 
     @PostMapping
     public JsonResponse<Map<String, Object>> create(@RequestBody Book book, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         Map<String, Object> data = new HashMap<>(); data.put("book", bookService.create(book));
-        return JsonResponse.success("新增图书成功", data);
+        return JsonResponse.success("Book created", data);
     }
 
     @PutMapping("/{id}")
     public JsonResponse<Map<String, Object>> update(@PathVariable Long id,
                                                      @RequestBody Book book, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         Map<String, Object> data = new HashMap<>(); data.put("book", bookService.update(id, book));
-        return JsonResponse.success("更新图书成功", data);
+        return JsonResponse.success("Book updated", data);
     }
 
     @DeleteMapping("/{id}")
     public JsonResponse<Void> delete(@PathVariable Long id, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         bookService.delete(id);
-        return JsonResponse.success("删除图书成功", null);
+        return JsonResponse.success("Book deleted", null);
     }
 }

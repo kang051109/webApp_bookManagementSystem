@@ -1,8 +1,8 @@
 /**
- * 轻量级全局 Toast 通知
- * 用法: import { showToast } from '../services/toast.js'
- *       showToast('操作成功', 'success')
- *       showToast('出错了', 'error', 5000)
+ * Lightweight global Toast notification
+ * - Usage:: import { showToast } from '../services/toast.js'
+ *       showToast('Success', 'success')
+ *       showToast('error', 'error', 5000)
  */
 let toastId = 0
 let listeners = []

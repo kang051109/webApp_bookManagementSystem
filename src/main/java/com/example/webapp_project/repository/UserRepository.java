@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 用户数据访问层 - JDBC 实现（单例）
+ * UserData access layer - JDBC Implementation (singleton)
  */
 public class UserRepository {
 
@@ -26,7 +26,7 @@ public class UserRepository {
                 if (rs.next()) return mapUser(rs);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("查询用户失败", e);
+            throw new RuntimeException("Failed to query user", e);
         }
         return null;
     }
@@ -40,7 +40,7 @@ public class UserRepository {
                 if (rs.next()) return mapUser(rs);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("查询用户失败", e);
+            throw new RuntimeException("Failed to query user", e);
         }
         return null;
     }
@@ -54,7 +54,7 @@ public class UserRepository {
                 if (rs.next()) return mapUser(rs);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("查询用户失败", e);
+            throw new RuntimeException("Failed to query user", e);
         }
         return null;
     }
@@ -73,7 +73,7 @@ public class UserRepository {
                 if (keys.next()) return findById(keys.getLong(1));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("创建用户失败", e);
+            throw new RuntimeException("Failed to create user", e);
         }
         return null;
     }
@@ -86,7 +86,7 @@ public class UserRepository {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) users.add(mapUser(rs));
         } catch (SQLException e) {
-            throw new RuntimeException("查询用户列表失败", e);
+            throw new RuntimeException("Failed to list users", e);
         }
         return users;
     }
@@ -98,12 +98,12 @@ public class UserRepository {
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) return rs.getLong(1);
         } catch (SQLException e) {
-            throw new RuntimeException("统计用户数失败", e);
+            throw new RuntimeException("Failed to count users", e);
         }
         return 0;
     }
 
-    /** 更新用户密码哈希 */
+    /** UpdateUserPasswordhash */
     public void updatePassword(Long userId, String newHash) {
         String sql = "UPDATE users SET password_hash=? WHERE id=?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -112,8 +112,16 @@ public class UserRepository {
             ps.setLong(2, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("更新密码失败", e);
+            throw new RuntimeException("Failed to update password", e);
         }
+    }
+
+    public void delete(Long id) {
+        String sql = "DELETE FROM users WHERE id=?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id); ps.executeUpdate();
+        } catch (SQLException e) { throw new RuntimeException("Failed to delete user", e); }
     }
 
     private User mapUser(ResultSet rs) throws SQLException {

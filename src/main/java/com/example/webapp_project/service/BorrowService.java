@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 借阅业务服务 - 含手动事务管理（单例）
- * 所有写操作在同一个事务连接中完成，确保数据一致性
+ * BorrowService - 含手动事务管理（single例）
+ * All writesActionsin same tx connection for consistency
  */
 public class BorrowService {
 
@@ -28,19 +28,19 @@ public class BorrowService {
     private static final int BORROW_DAYS = 14;
 
     /**
-     * 借阅图书（事务保护 + 原子 SQL 防竞态）
+     * BorrowBook (tx-protected + Atomic SQL race-safe)
      */
     public Map<String, Object> borrowBook(Long userId, Long bookId) {
         Book book = bookRepo.findById(bookId);
-        if (book == null) throw new IllegalArgumentException("图书不存在");
-        if (book.getAvailableCopies() <= 0) throw new IllegalArgumentException("该图书暂无余量可借");
+        if (book == null) throw new IllegalArgumentException("Book not found");
+        if (book.getAvailableCopies() <= 0) throw new IllegalArgumentException("No copies available");
 
         List<BorrowRecord> active = borrowRepo.findActiveByUserId(userId);
         for (BorrowRecord r : active) {
             if (r.getDueDate().isBefore(LocalDateTime.now()))
-                throw new IllegalArgumentException("您有逾期图书未还，请先归还后再借阅");
+                throw new IllegalArgumentException("You have overdue books. Return them first");
             if (r.getBookId().equals(bookId))
-                throw new IllegalArgumentException("您已借阅过此书且尚未归还");
+                throw new IllegalArgumentException("You already borrowed this book");
         }
 
         LocalDateTime dueDate = LocalDateTime.now().plusDays(BORROW_DAYS);
@@ -49,19 +49,19 @@ public class BorrowService {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 事务内重复借阅 + 逾期二次检查（同连接，防竞态窗口）
+            // In-tx repeat Borrow + overdue re-check (same conn, race-safe)
             List<BorrowRecord> txActive = borrowRepo.findActiveByUserId(conn, userId);
             for (BorrowRecord r : txActive) {
                 if (r.getDueDate().isBefore(LocalDateTime.now()))
-                    throw new IllegalArgumentException("您有逾期图书未还，请先归还后再借阅");
+                    throw new IllegalArgumentException("You have overdue books. Return them first");
                 if (r.getBookId().equals(bookId))
-                    throw new IllegalArgumentException("您已借阅过此书且尚未归还");
+                    throw new IllegalArgumentException("You already borrowed this book");
             }
 
-            // 写入借阅记录
+            // InsertBorrow记录
             BorrowRecord record = borrowRepo.save(conn, userId, bookId, dueDate);
 
-            // 原子扣减库存
+            // Atomic扣减Stock
             bookRepo.updateAvailableCopies(conn, bookId, -1);
 
             conn.commit();
@@ -74,7 +74,7 @@ public class BorrowService {
             try { if (conn != null) conn.rollback(); } catch (SQLException ignored) {}
             if (e instanceof IllegalArgumentException) throw (IllegalArgumentException) e;
             if (e instanceof RuntimeException) throw (RuntimeException) e;
-            throw new RuntimeException("借阅操作失败", e);
+            throw new RuntimeException("Borrow failed", e);
         } finally {
             try {
                 if (conn != null) { conn.setAutoCommit(true); conn.close(); }
@@ -83,16 +83,16 @@ public class BorrowService {
     }
 
     /**
-     * 归还图书（事务保护）
+     * ReturnBook (tx-protected）
      */
     public Map<String, Object> returnBook(Long recordId, Long userId, boolean isAdmin) {
-        // 预检查（独立连接，只读）
+        // Pre-check (independent conn, read-only)
         BorrowRecord record = borrowRepo.findById(recordId);
-        if (record == null) throw new IllegalArgumentException("借阅记录不存在");
+        if (record == null) throw new IllegalArgumentException("Borrow record not found");
         if (!isAdmin && !record.getUserId().equals(userId))
-            throw new IllegalArgumentException("无权操作此借阅记录");
+            throw new IllegalArgumentException("Not authorized");
         if (!"borrowed".equals(record.getStatus()))
-            throw new IllegalArgumentException("该记录已归还，无需重复操作");
+            throw new IllegalArgumentException("Already returned");
 
         LocalDateTime now = LocalDateTime.now();
         String status = record.getDueDate().isBefore(now) ? "overdue" : "returned";
@@ -102,15 +102,15 @@ public class BorrowService {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 步骤1: 更新借阅记录状态
+            // Step1: UpdateBorrow记录Status
             borrowRepo.returnBook(conn, recordId, now, status);
 
-            // 步骤2: 恢复库存
+            // Step2: RestoreStock
             bookRepo.updateAvailableCopies(conn, record.getBookId(), 1);
 
             conn.commit();
 
-            // 用事务连接读取最终状态
+            // Read final state with tx connectionStatus
             BorrowRecord updated = borrowRepo.findById(conn, recordId);
             Map<String, Object> r = new HashMap<>();
             r.put("borrowRecord", updated);
@@ -119,7 +119,7 @@ public class BorrowService {
             try { if (conn != null) conn.rollback(); } catch (SQLException ignored) {}
             if (e instanceof IllegalArgumentException) throw (IllegalArgumentException) e;
             if (e instanceof RuntimeException) throw (RuntimeException) e;
-            throw new RuntimeException("归还操作失败", e);
+            throw new RuntimeException("Return failed", e);
         } finally {
             try {
                 if (conn != null) { conn.setAutoCommit(true); conn.close(); }
@@ -129,4 +129,5 @@ public class BorrowService {
 
     public List<BorrowRecord> getUserHistory(Long userId) { return borrowRepo.findByUserId(userId); }
     public List<BorrowRecord> getAllRecords() { return borrowRepo.findAll(); }
+    public List<BorrowRecord> getOverdueRecords() { return borrowRepo.findOverdue(); }
 }

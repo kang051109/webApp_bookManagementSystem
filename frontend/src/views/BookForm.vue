@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="breadcrumb"><router-link to="/books">图书管理</router-link><span>/</span><span>{{ isEdit ? '编辑' : '新增' }}</span></div>
+    <div class="breadcrumb"><router-link to="/books">Books</router-link><span>/</span><span>{{ isEdit ? 'Edit' : '+ New' }}</span></div>
     <div class="page-header">
-      <h3>{{ isEdit ? '编辑图书' : '新增图书' }}</h3>
-      <button class="btn btn-outline btn-sm" @click="$router.push('/books')">&larr; 返回</button>
+      <h3>{{ isEdit ? 'Edit图书' : 'New Book' }}</h3>
+      <button class="btn btn-outline btn-sm" @click="$router.push('/books')">&larr; Back</button>
     </div>
 
     <!-- Issue 6: Consistent decoration -->
@@ -11,29 +11,29 @@
       <form @submit.prevent="handleSubmit">
         <div class="form-row">
           <div class="form-group"><label>ISBN</label><input v-model="form.isbn" type="text" placeholder="978-7-xxx" required :disabled="loading" /></div>
-          <div class="form-group"><label>分类</label><select v-model="form.categoryId"><option value="">请选择</option><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option></select></div>
+          <div class="form-group"><label>Category</label><select v-model="form.categoryId"><option value="">Select</option><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option></select></div>
         </div>
-        <div class="form-group"><label>书名</label><input v-model="form.title" type="text" placeholder="请输入书名" required :disabled="loading" /></div>
+        <div class="form-group"><label>Title</label><input v-model="form.title" type="text" placeholder="Enter Title" required :disabled="loading" /></div>
         <div class="form-row">
-          <div class="form-group"><label>作者</label><input v-model="form.author" type="text" placeholder="请输入作者" required :disabled="loading" /></div>
-          <div class="form-group"><label>出版社</label><input v-model="form.publisher" type="text" placeholder="请输入出版社" :disabled="loading" /></div>
+          <div class="form-group"><label>Author</label><input v-model="form.author" type="text" placeholder="Enter Author" required :disabled="loading" /></div>
+          <div class="form-group"><label>Publisher</label><input v-model="form.publisher" type="text" placeholder="Enter Publisher" :disabled="loading" /></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>出版年份</label><input v-model="form.publishYear" type="number" placeholder="2024" min="1000" max="2099" :disabled="loading" /></div>
+          <div class="form-group"><label>Publish Year</label><input v-model="form.publishYear" type="number" placeholder="2024" min="1000" max="2099" :disabled="loading" /></div>
         </div>
         <div class="form-row" v-if="isEdit">
-          <div class="form-group"><label>总库存</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="库存量" required :disabled="loading" /></div>
-          <div class="form-group"><label>可借数量</label><input v-model.number="form.availableCopies" type="number" min="0" placeholder="可借数量" :disabled="loading" /><small style="color:var(--warm-gray);font-size:0.6875rem;">已借出 {{ borrowedHint }} 本</small></div>
+          <div class="form-group"><label>Total Copies</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="Stock量" required :disabled="loading" /></div>
+          <div class="form-group"><label>Available数量</label><input v-model.number="form.availableCopies" type="number" min="0" placeholder="Available数量" :disabled="loading" /><small style="color:var(--warm-gray);font-size:0.6875rem;">已借出 {{ borrowedHint }} copies</small></div>
         </div>
         <div class="form-row" v-else>
-          <div class="form-group"><label>总库存</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="库存量" required :disabled="loading" /></div>
+          <div class="form-group"><label>Total Copies</label><input v-model.number="form.totalCopies" type="number" min="1" placeholder="Stock量" required :disabled="loading" /></div>
         </div>
-        <div class="form-group"><label>描述</label><textarea v-model="form.description" rows="4" placeholder="图书简介" :disabled="loading"></textarea></div>
+        <div class="form-group"><label>Description</label><textarea v-model="form.description" rows="4" placeholder="图书Description" :disabled="loading"></textarea></div>
         <div v-if="error" class="error-message">{{ error }}</div>
         <div v-if="success" class="success-message">{{ success }}</div>
         <div class="form-actions">
-          <button type="button" class="btn btn-outline" @click="$router.push('/books')">取消</button>
-          <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? '提交中...' : (isEdit ? '保存修改' : '确认新增') }}</button>
+          <button type="button" class="btn btn-outline" @click="$router.push('/books')">Cancel</button>
+          <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? 'Submitting...' : (isEdit ? 'Save' : 'Confirm') }}</button>
         </div>
       </form>
     </div>
@@ -56,12 +56,12 @@ export default {
   async mounted() { this.isEdit = !!this.$route.params.id; await this.loadCategories(); if (this.isEdit) await this.loadBook() },
   methods: {
     async loadCategories() { try { const res = await api.get('/categories'); if (res.code === 200 && res.data) this.categories = res.data.categories || [] } catch {} },
-    async loadBook() { try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data?.book) { const b = res.data.book; const av = b.availableCopies != null ? b.availableCopies : b.totalCopies; const tot = b.totalCopies || 1; this.form = { isbn: b.isbn || '', title: b.title || '', author: b.author || '', publisher: b.publisher || '', publishYear: b.publishYear || '', categoryId: b.categoryId || '', totalCopies: tot, availableCopies: av, description: b.description || '' }; this.borrowedHint = tot - av; } } catch { this.error = '加载失败' } },
+    async loadBook() { try { const res = await api.get(`/books/${this.$route.params.id}`); if (res.code === 200 && res.data?.book) { const b = res.data.book; const av = b.availableCopies != null ? b.availableCopies : b.totalCopies; const tot = b.totalCopies || 1; this.form = { isbn: b.isbn || '', title: b.title || '', author: b.author || '', publisher: b.publisher || '', publishYear: b.publishYear || '', categoryId: b.categoryId || '', totalCopies: tot, availableCopies: av, description: b.description || '' }; this.borrowedHint = tot - av; } } catch { this.error = 'Load failed' } },
     async handleSubmit() {
       this.error = ''; this.success = ''; this.loading = true
       const payload = { isbn: this.form.isbn, title: this.form.title, author: this.form.author, publisher: this.form.publisher || null, publishYear: this.form.publishYear ? parseInt(this.form.publishYear) : null, categoryId: this.form.categoryId ? parseInt(this.form.categoryId) : null, totalCopies: parseInt(this.form.totalCopies) || 1, availableCopies: this.isEdit && this.form.availableCopies != null ? parseInt(this.form.availableCopies) : null, description: this.form.description || null }
-      try { const res = this.isEdit ? await api.put(`/books/${this.$route.params.id}`, payload) : await api.post('/books', payload); if (res.code === 200) { showToast(this.isEdit ? '图书已更新' : '图书已创建'); setTimeout(() => { this.$router.push('/books') }, 500) } else { this.error = res.message || '操作失败' } }
-      catch (err) { this.error = err.message || '操作失败' } finally { this.loading = false }
+      try { const res = this.isEdit ? await api.put(`/books/${this.$route.params.id}`, payload) : await api.post('/books', payload); if (res.code === 200) { showToast(this.isEdit ? 'Book updated' : 'Book created'); setTimeout(() => { this.$router.push('/books') }, 500) } else { this.error = res.message || 'Operation failed' } }
+      catch (err) { this.error = err.message || 'Operation failed' } finally { this.loading = false }
     }
   }
 }

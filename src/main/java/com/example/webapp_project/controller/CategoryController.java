@@ -33,25 +33,25 @@ public class CategoryController {
 
     @PostMapping
     public JsonResponse<Map<String, Object>> create(@RequestBody Map<String, String> request, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         Category category = categoryService.create(request.get("name"), request.get("description"));
         Map<String, Object> data = new HashMap<>(); data.put("category", category);
-        return JsonResponse.success("新增分类成功", data);
+        return JsonResponse.success("Category created", data);
     }
 
     @PutMapping("/{id}")
     public JsonResponse<Map<String, Object>> update(@PathVariable Long id,
                                                      @RequestBody Map<String, String> request, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         Category category = categoryService.update(id, request.get("name"), request.get("description"));
         Map<String, Object> data = new HashMap<>(); data.put("category", category);
-        return JsonResponse.success("更新分类成功", data);
+        return JsonResponse.success("Category updated", data);
     }
 
     @DeleteMapping("/{id}")
     public JsonResponse<Void> delete(@PathVariable Long id, HttpServletRequest req) {
-        if (!authService.isAdmin(req)) return JsonResponse.forbidden("仅管理员可操作");
+        if (!authService.isAdmin(req)) return JsonResponse.forbidden("Admin only");
         categoryService.delete(id);
-        return JsonResponse.success("删除分类成功", null);
+        return JsonResponse.success("Category deleted", null);
     }
 }

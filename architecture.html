@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>图书管理系统 - 系统架构图 & ER 图</title>
+<title>Book Management System — Architecture &amp; ER Diagrams</title>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <style>
   :root {
@@ -56,7 +56,7 @@
   }
   .mermaid-wrapper svg { max-width: 100%; height: auto; }
 
-  /* Architecture diagram styles */
+  /* Architecture diagram */
   .arch { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 20px 0; }
   .arch-row { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 0; position: relative; }
   .arch-connector { display: flex; flex-direction: column; align-items: center; padding: 4px 0; }
@@ -73,14 +73,11 @@
     font-size: 11px; font-weight: 600; padding: 0 8px; background: #fff; border-radius: 4px;
   }
   .arch-layer-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-
   .arch-node {
     padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
     text-align: center; line-height: 1.4; white-space: nowrap;
   }
   .arch-node-sm { padding: 6px 12px; font-size: 11px; }
-
-  .arch-dashed { border-style: dashed !important; }
 
   .legend {
     display: flex; flex-wrap: wrap; gap: 16px;
@@ -89,9 +86,7 @@
   .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--neutral-600); }
   .legend-item .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
 
-  .tech-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
-  }
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .tech-card { border-radius: 10px; padding: 16px; }
   .tech-card .tt { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
   .tech-card .tc { font-size: 13px; line-height: 1.8; }
@@ -109,34 +104,43 @@
 <div class="container">
 
   <div class="header">
-    <h1>图书管理系统</h1>
-    <p class="subtitle">Book Management System - Architecture Design Document</p>
+    <h1>Book Management System</h1>
+    <p class="subtitle">System Architecture &amp; Entity-Relationship Diagrams</p>
     <div class="divider"></div>
   </div>
 
-  <!-- ========== Diagram 1: Architecture (HTML/CSS) ========== -->
+  <!-- ========== Diagram 1: Architecture ========== -->
   <div class="card">
     <div class="card-title">
-      <span>一、系统架构图</span>
+      <span>1. System Architecture</span>
       <span class="badge">System Architecture</span>
     </div>
     <p class="card-desc">
-      系统采用前后端分离架构。前端 Vue.js SPA 通过 RESTful API 与 Jakarta EE 后端通信，
-      后端严格遵循三层分层架构（Controller / Service / Repository），数据持久化至关系型数据库。
+      Decoupled front-end/back-end architecture. Vue.js SPA communicates with Spring Boot back-end via RESTful APIs.
+      The back-end follows a layered architecture (Controller / Service / Repository) with manual JDBC persistence to MySQL.
     </p>
 
-    <!-- Architecture Diagram -->
     <div class="arch">
 
       <!-- Layer 1: Frontend -->
-      <div class="arch-layer" style="border-color:#0284c7;background:#f0f9ff;min-width:500px;">
-        <span class="arch-layer-label" style="color:#0284c7;">前端层 - Vue.js SPA</span>
+      <div class="arch-layer" style="border-color:#0284c7;background:#f0f9ff;min-width:580px;">
+        <span class="arch-layer-label" style="color:#0284c7;">Frontend — Vue.js 3 SPA</span>
         <div class="arch-layer-row">
           <span class="arch-node" style="background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc;">Login / Register</span>
           <span class="arch-node" style="background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc;">BookList / Detail</span>
           <span class="arch-node" style="background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc;">BookForm / Category</span>
           <span class="arch-node" style="background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc;">MyBorrows / Dashboard</span>
+          <span class="arch-node" style="background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc;">UserManage / ChangePwd</span>
         </div>
+      </div>
+
+      <!-- Features bar -->
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+        <span class="arch-node arch-node-sm" style="background:#fefce8;color:#a16207;border:1px solid #fde68a;">NProgress</span>
+        <span class="arch-node arch-node-sm" style="background:#fefce8;color:#a16207;border:1px solid #fde68a;">Toast Notifications</span>
+        <span class="arch-node arch-node-sm" style="background:#fefce8;color:#a16207;border:1px solid #fde68a;">Dark Mode</span>
+        <span class="arch-node arch-node-sm" style="background:#fefce8;color:#a16207;border:1px solid #fde68a;">Global Search (Ctrl+K)</span>
+        <span class="arch-node arch-node-sm" style="background:#fefce8;color:#a16207;border:1px solid #fde68a;">Card View</span>
       </div>
 
       <!-- API Connector -->
@@ -147,20 +151,21 @@
       </div>
 
       <!-- Layer 2: Backend -->
-      <div class="arch-layer" style="border-color:#7c3aed;background:#faf5ff;min-width:650px;">
-        <span class="arch-layer-label" style="color:#7c3aed;">后端层 - Jakarta EE / Servlet</span>
+      <div class="arch-layer" style="border-color:#7c3aed;background:#faf5ff;min-width:700px;">
+        <span class="arch-layer-label" style="color:#7c3aed;">Backend — Spring Boot 3.4 (Java 17)</span>
 
-        <!-- Controller -->
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;">
+          <!-- Controller -->
           <div class="arch-layer-row">
             <div class="arch-layer" style="border-color:#2563eb;background:#eff6ff;padding:8px 12px;min-width:100%;">
-              <span class="arch-layer-label" style="color:#2563eb;left:8px;">Controller - JAX-RS</span>
+              <span class="arch-layer-label" style="color:#2563eb;left:8px;">Controller — @RestController</span>
               <div class="arch-layer-row">
-                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">AuthResource</span>
-                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">BookResource</span>
-                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">CategoryResource</span>
-                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">BorrowResource</span>
-                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">DashboardResource</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">AuthController</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">BookController</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">CategoryController</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">BorrowController</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">DashboardController</span>
+                <span class="arch-node arch-node-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;">AdminController</span>
               </div>
             </div>
           </div>
@@ -168,7 +173,7 @@
           <!-- Service -->
           <div class="arch-layer-row">
             <div class="arch-layer" style="border-color:#7c3aed;background:#f5f3ff;padding:8px 12px;min-width:100%;">
-              <span class="arch-layer-label" style="color:#7c3aed;left:8px;">Service - Singleton</span>
+              <span class="arch-layer-label" style="color:#7c3aed;left:8px;">Service — Singleton getInstance()</span>
               <div class="arch-layer-row">
                 <span class="arch-node arch-node-sm" style="background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;">AuthService</span>
                 <span class="arch-node arch-node-sm" style="background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;">BookService</span>
@@ -182,7 +187,7 @@
           <!-- Repository -->
           <div class="arch-layer-row">
             <div class="arch-layer" style="border-color:#d97706;background:#fffbeb;padding:8px 12px;min-width:100%;">
-              <span class="arch-layer-label" style="color:#d97706;left:8px;">Repository - JDBC DAO</span>
+              <span class="arch-layer-label" style="color:#d97706;left:8px;">Repository — JDBC DAO</span>
               <div class="arch-layer-row">
                 <span class="arch-node arch-node-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">UserRepo</span>
                 <span class="arch-node arch-node-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">BookRepo</span>
@@ -202,7 +207,7 @@
 
       <!-- Layer 3: Database -->
       <div class="arch-layer" style="border-color:#db2777;background:#fdf2f8;min-width:400px;">
-        <span class="arch-layer-label" style="color:#db2777;">数据库层 - MySQL</span>
+        <span class="arch-layer-label" style="color:#db2777;">Database — MySQL (InnoDB)</span>
         <div class="arch-layer-row">
           <span class="arch-node" style="background:#fce7f3;color:#831843;border:1px solid #f9a8d4;">users</span>
           <span class="arch-node" style="background:#fce7f3;color:#831843;border:1px solid #f9a8d4;">categories</span>
@@ -215,91 +220,94 @@
 
     <!-- Cross-cutting Services -->
     <div style="margin-top:28px;padding-top:20px;border-top:1px dashed var(--neutral-300);">
-      <div style="font-size:12px;font-weight:600;color:var(--neutral-600);margin-bottom:10px;">横切关注点 (Cross-cutting)</div>
+      <div style="font-size:12px;font-weight:600;color:var(--neutral-600);margin-bottom:10px;">Cross-cutting Concerns</div>
       <div class="arch-layer-row" style="gap:10px;">
-        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">CORS Filter</span>
-        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">ExceptionMapper</span>
+        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">WebConfig (CORS)</span>
+        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">GlobalExceptionHandler</span>
         <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">JsonResponse</span>
-        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">PasswordUtil</span>
-        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">DatabaseUtil</span>
+        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">Jackson JSR310</span>
+        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">PasswordUtil (BCrypt)</span>
+        <span class="arch-node arch-node-sm" style="background:#f8fafc;color:#475569;border:1px dashed #94a3b8;">DatabaseUtil (HikariCP)</span>
       </div>
     </div>
 
     <div class="legend">
-      <span class="legend-item"><span class="swatch" style="background:#e0f2fe;border:2px solid #0284c7;"></span> 前端层</span>
+      <span class="legend-item"><span class="swatch" style="background:#e0f2fe;border:2px solid #0284c7;"></span> Frontend</span>
+      <span class="legend-item"><span class="swatch" style="background:#fefce8;border:1px solid #fde68a;"></span> UI Features</span>
       <span class="legend-item"><span class="swatch" style="background:#dbeafe;border:2px solid #2563eb;"></span> Controller</span>
       <span class="legend-item"><span class="swatch" style="background:#ede9fe;border:2px solid #7c3aed;"></span> Service</span>
       <span class="legend-item"><span class="swatch" style="background:#fef3c7;border:2px solid #d97706;"></span> Repository</span>
-      <span class="legend-item"><span class="swatch" style="background:#fce7f3;border:2px solid #db2777;"></span> 数据库</span>
-      <span class="legend-item"><span class="swatch" style="background:#f8fafc;border:1px dashed #94a3b8;"></span> 横切关注点</span>
+      <span class="legend-item"><span class="swatch" style="background:#fce7f3;border:2px solid #db2777;"></span> Database</span>
+      <span class="legend-item"><span class="swatch" style="background:#f8fafc;border:1px dashed #94a3b8;"></span> Cross-cutting</span>
+      <span class="legend-item" style="margin-left:auto;"><span style="font-size:11px;color:#94a3b8;">Solid lines: data flow &nbsp; Dashed: dependency</span></span>
     </div>
   </div>
 
-  <!-- ========== Diagram 2: ER (Mermaid) ========== -->
+  <!-- ========== Diagram 2: ER ========== -->
   <div class="card">
     <div class="card-title">
-      <span>二、数据库 ER 图</span>
+      <span>2. Database ER Diagram</span>
       <span class="badge">Entity-Relationship Diagram</span>
     </div>
     <p class="card-desc">
-      系统包含 4 张核心数据表。users 与 books 通过 borrow_records 建立多对多借阅关系，
-      books 通过 category_id 关联 categories 进行分类。
+      4 core tables. users and books are linked through borrow_records (many-to-many),
+      books reference categories via category_id.
     </p>
 
     <div class="mermaid-wrapper">
       <pre class="mermaid" style="text-align:center;">
 erDiagram
     users {
-        BIGINT id PK "主键"
-        VARCHAR username UK "用户名(唯一)"
-        VARCHAR password_hash "密码哈希"
-        VARCHAR email UK "邮箱(唯一)"
-        VARCHAR full_name "姓名"
-        VARCHAR role "角色 user/admin"
-        TIMESTAMP created_at "创建时间"
+        BIGINT id PK "primary key"
+        VARCHAR username UK "unique"
+        VARCHAR password_hash "BCrypt hash"
+        VARCHAR email UK "unique"
+        VARCHAR full_name "full name"
+        VARCHAR role "user / admin"
+        TIMESTAMP created_at "created at"
     }
 
     categories {
-        BIGINT id PK "主键"
-        VARCHAR name UK "分类名称(唯一)"
-        VARCHAR description "分类描述"
+        BIGINT id PK "primary key"
+        VARCHAR name UK "unique"
+        VARCHAR description "optional"
     }
 
     books {
-        BIGINT id PK "主键"
-        VARCHAR isbn UK "ISBN(唯一)"
-        VARCHAR title "书名"
-        VARCHAR author "作者"
-        VARCHAR publisher "出版社"
-        INT publish_year "出版年份"
-        BIGINT category_id FK "外键-categories"
-        INT total_copies "总库存"
-        INT available_copies "可借数量"
-        TEXT description "图书描述"
+        BIGINT id PK "primary key"
+        VARCHAR isbn UK "unique"
+        VARCHAR title "not null"
+        VARCHAR author "not null"
+        VARCHAR publisher "optional"
+        INT publish_year "optional"
+        BIGINT category_id FK "references categories"
+        INT total_copies ">= 1"
+        INT available_copies ">= 0"
+        TEXT description "optional"
     }
 
     borrow_records {
-        BIGINT id PK "主键"
-        BIGINT user_id FK "外键-users"
-        BIGINT book_id FK "外键-books"
-        TIMESTAMP borrow_date "借阅日期"
-        TIMESTAMP due_date "应还日期(14天)"
-        TIMESTAMP return_date "归还日期"
-        VARCHAR status "状态"
+        BIGINT id PK "primary key"
+        BIGINT user_id FK "references users"
+        BIGINT book_id FK "references books"
+        TIMESTAMP borrow_date "default NOW()"
+        TIMESTAMP due_date "borrow_date + 14d"
+        TIMESTAMP return_date "nullable"
+        VARCHAR status "borrowed / returned / overdue"
     }
 
-    categories ||--o{ books : "包含"
-    users ||--o{ borrow_records : "借阅"
-    books ||--o{ borrow_records : "被借阅"
+    categories ||--o{ books : "has"
+    users ||--o{ borrow_records : "borrows"
+    books ||--o{ borrow_records : "borrowed by"
       </pre>
     </div>
 
     <div class="legend">
-      <span class="legend-item"><span class="swatch" style="background:#fef2f2;border:2px solid #dc2626;">&nbsp;PK&nbsp;</span> 主键</span>
-      <span class="legend-item"><span class="swatch" style="background:#fefce8;border:2px solid #ca8a04;">&nbsp;FK&nbsp;</span> 外键</span>
-      <span class="legend-item"><span class="swatch" style="background:#f0fdf4;border:2px solid #16a34a;">&nbsp;UK&nbsp;</span> 唯一约束</span>
+      <span class="legend-item"><span class="swatch" style="background:#fef2f2;border:2px solid #dc2626;">PK</span> Primary Key</span>
+      <span class="legend-item"><span class="swatch" style="background:#fefce8;border:2px solid #ca8a04;">FK</span> Foreign Key</span>
+      <span class="legend-item"><span class="swatch" style="background:#f0fdf4;border:2px solid #16a34a;">UK</span> Unique Constraint</span>
       <span class="legend-item" style="margin-left:auto;">
-        <span style="font-size:11px;color:#94a3b8;">||--o{ : 一对多关系</span>
+        <span style="font-size:11px;color:#94a3b8;">||--o{ : one-to-many</span>
       </span>
     </div>
   </div>
@@ -307,51 +315,99 @@ erDiagram
   <!-- ========== Tech Stack ========== -->
   <div class="card" style="page-break-inside:avoid;">
     <div class="card-title">
-      <span>三、技术栈总览</span>
+      <span>3. Technology Stack</span>
       <span class="badge">Tech Stack</span>
     </div>
-    <p class="card-desc">项目采用的全部技术组件一览</p>
+    <p class="card-desc">All technology components used in this project</p>
 
     <div class="tech-grid">
       <div class="tech-card" style="background:#f0f9ff;border:1px solid #bae6fd;">
-        <div class="tt" style="color:#0369a1;">前端</div>
+        <div class="tt" style="color:#0369a1;">Frontend</div>
         <div class="tc" style="color:#475569;">
           Vue.js 3 (Composition API)<br>
-          Vue Router<br>
+          Vue Router 4<br>
           Axios<br>
-          Vite 构建工具
+          NProgress<br>
+          Vite 5
         </div>
       </div>
       <div class="tech-card" style="background:#f0fdf4;border:1px solid #bbf7d0;">
-        <div class="tt" style="color:#15803d;">后端</div>
+        <div class="tt" style="color:#15803d;">Backend</div>
         <div class="tc" style="color:#475569;">
-          Jakarta Servlet 6.1<br>
-          Jersey (JAX-RS)<br>
-          Jersey HK2 Injection<br>
-          Jackson + JSR310 (LocalDateTime)<br>
-          HikariCP 连接池
+          Spring Boot 3.4<br>
+          Spring Web MVC<br>
+          Embedded Tomcat 10<br>
+          Jackson + JSR310<br>
+          HikariCP
         </div>
       </div>
       <div class="tech-card" style="background:#fefce8;border:1px solid #fde68a;">
-        <div class="tt" style="color:#a16207;">数据层</div>
+        <div class="tt" style="color:#a16207;">Data Layer</div>
         <div class="tc" style="color:#475569;">
-          MySQL<br>
-          JDBC 手动 DAO<br>
-          JBCrypt 密码加密
+          MySQL 8.0<br>
+          JDBC (manual DAO)<br>
+          JBCrypt (password hashing)
         </div>
       </div>
       <div class="tech-card" style="background:#fef2f2;border:1px solid #fecaca;">
-        <div class="tt" style="color:#dc2626;">构建与部署</div>
+        <div class="tt" style="color:#dc2626;">Build &amp; Deploy</div>
         <div class="tc" style="color:#475569;">
-          Maven (WAR 打包)<br>
-          Apache Tomcat 10+<br>
-          Java 8+
+          Maven (JAR packaging)<br>
+          spring-boot-maven-plugin<br>
+          Java 17+
         </div>
       </div>
     </div>
   </div>
 
-  <div class="footer">图书管理系统 - Architecture Design Document - 2026</div>
+  <!-- ========== API Reference ========== -->
+  <div class="card" style="page-break-inside:avoid;">
+    <div class="card-title">
+      <span>4. RESTful API Endpoints</span>
+      <span class="badge">API Reference</span>
+    </div>
+    <p class="card-desc">All 20 API endpoints exposed by the Spring Boot back-end</p>
+
+    <div class="tech-grid">
+      <div class="tech-card" style="background:#f0f9ff;border:1px solid #bae6fd;">
+        <div class="tt" style="color:#0369a1;">Auth &amp; Users</div>
+        <div class="tc" style="color:#475569;font-size:12px;line-height:1.6;">
+          POST /api/auth/register<br>
+          POST /api/auth/login<br>
+          POST /api/auth/logout<br>
+          GET  /api/auth/me<br>
+          POST /api/auth/change-password<br>
+          GET  /api/admin/users<br>
+          DELETE /api/admin/users/{id}
+        </div>
+      </div>
+      <div class="tech-card" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+        <div class="tt" style="color:#15803d;">Books &amp; Categories</div>
+        <div class="tc" style="color:#475569;font-size:12px;line-height:1.6;">
+          GET    /api/books<br>
+          GET    /api/books/{id}<br>
+          POST   /api/books<br>
+          PUT    /api/books/{id}<br>
+          DELETE /api/books/{id}<br>
+          GET    /api/categories<br>
+          POST/PUT/DELETE /api/categories
+        </div>
+      </div>
+      <div class="tech-card" style="background:#fefce8;border:1px solid #fde68a;">
+        <div class="tt" style="color:#a16207;">Borrow &amp; Stats</div>
+        <div class="tc" style="color:#475569;font-size:12px;line-height:1.6;">
+          POST /api/borrow<br>
+          POST /api/borrow/{id}/return<br>
+          GET  /api/borrow/my<br>
+          GET  /api/borrow<br>
+          GET  /api/borrow/overdue<br>
+          GET  /api/dashboard/stats
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Book Management System &mdash; Architecture Design Document &mdash; 2026</div>
 </div>
 
 <script>

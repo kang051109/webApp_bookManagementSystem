@@ -18,7 +18,7 @@ public class DashboardController {
 
     @GetMapping("/stats")
     public JsonResponse<Map<String, Object>> getStats(HttpServletRequest req) {
-        if (authService.getCurrentUser(req) == null) return JsonResponse.unauthorized("请先登录");
+        if (authService.getCurrentUser(req) == null) return JsonResponse.unauthorized("Please login first");
         return JsonResponse.success(dashboardService.getStats());
     }
 }
